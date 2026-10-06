@@ -3,11 +3,15 @@ package com.library.lms.dto;
 /**
  * A book as an unauthenticated visitor sees it.
  *
- * <p><b>Bibliographic facts only.</b> ID, title, author, ISBN, category,
- * holding library and safe cover information. Deliberately absent are operational
- * details such as copy counts, library IDs, and private transaction or member data.</p>
+ * <p>Bibliographic facts only: title, author, ISBN, category and
+ * holding library. Operational details such as IDs, copy counts,
+ * cover storage information, transactions and member data are
+ * deliberately absent.</p>
  */
-public record PublicBookResponse(Long id, String title, String author, String isbn, String categoryName,
-        String libraryName, boolean hasCover, String coverUrl) {
+public record PublicBookResponse(
+        String title,
+        String author,
+        String isbn,
+        String categoryName,
+        String libraryName) {
 }
-
