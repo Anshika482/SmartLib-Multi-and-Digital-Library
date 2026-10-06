@@ -23,7 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Pageable;
 
 import com.library.lms.dto.IssueBookRequest;
@@ -82,6 +84,17 @@ class TransactionServiceLibraryScopingTest {
     private static final Long TRANSACTION_B_ID = 2000L;
 
     private static final LocalDate DUE_DATE = LocalDate.now().plusDays(14);
+
+    /**
+     * Where notification events go.
+     *
+     * <p>Needed by {@code @InjectMocks} rather than by these tests, which are
+     * about library scoping. Without it the publisher is null and issuing throws
+     * on the line that tells the borrower - so mocking it also keeps the failure
+     * these tests do look for from being hidden behind an unrelated one.</p>
+     */
+    @Mock
+    private ApplicationEventPublisher events;
 
     @Mock
     private TransactionRepository transactionRepository;
@@ -478,9 +491,53 @@ class TransactionServiceLibraryScopingTest {
     void theRepositoryDeclaresNoUnscopedQueries() {
         // Compile-time proof rather than a convention: a global method that
         // still exists is a global method somebody will call.
-        assertThat(Arrays.stream(TransactionRepository.class.getDeclaredMethods()).map(Method::getName))
-                .as("every declared query must carry the library")
-                .allSatisfy(methodName -> assertThat(methodName).endsWith("AndLibraryId"))
+        //
+        // A derived query has to say the library in its name, and says it last,
+        // so the name alone settles it. A @Query cannot - Spring Data has no
+        // derived form for SUM - so its JPQL is read instead, which proves more
+        // than a name could: a method could be called anything and still be
+        // unscoped, but a WHERE clause cannot.
+        //
+        // The one exception is deliberate and is pinned below rather than waved
+        // through: a super administrator's authority is system-wide, so eight
+        // finders answer across every library. Each has to say "SystemWide" in
+        // its name, and the list of them is exact - a seventh fails here.
+        List<Method> declared = Arrays.stream(TransactionRepository.class.getDeclaredMethods()).toList();
+
+        assertThat(declared)
+                .filteredOn(method -> !method.getName().startsWith("findSystemWide"))
+                .as("every declared query except the named system-wide ones must carry the library")
+                .isNotEmpty()
+                .allSatisfy(method -> {
+                    Query jpql = method.getAnnotation(Query.class);
+                    if (jpql == null) {
+                        assertThat(method.getName())
+                                .as("derived query %s", method.getName())
+                                .endsWith("AndLibraryId");
+                    } else {
+                        assertThat(jpql.value())
+                                .as("JPQL of %s", method.getName())
+                                .contains("t.library.id = :libraryId");
+                    }
+                });
+
+        // Exactly these, and nothing else, may cross a library boundary.
+        assertThat(declared)
+                .extracting(Method::getName)
+                .filteredOn(name -> name.startsWith("findSystemWide"))
+                .as("the system-wide finders are a closed set")
+                .containsExactlyInAnyOrder(
+                        "findSystemWideById",
+                        "findSystemWideByFinePaymentStatus",
+                        "findSystemWideByUserId",
+                        "findSystemWideByBookId",
+                        "findSystemWideByStatus",
+                        "findSystemWideByStatusInAndDueDateBefore",
+                        "findSystemWideByStatusInAndDueDateBetween",
+                        "findSystemWideByStatusInAndDueDateGreaterThanEqual");
+
+        assertThat(declared)
+                .extracting(Method::getName)
                 .doesNotContain("findByBookId", "findByUserId", "findByStatus");
     }
 }

@@ -1,0 +1,204 @@
+.sl-book {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  overflow: hidden;
+
+  /* The <li> stretches to the tallest card in the row; this makes the panel
+     inside it do the same, so a row of cards shares one bottom edge. */
+  height: 100%;
+  transition:
+    transform var(--duration) var(--ease-out),
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .sl-book:hover {
+    transform: translateY(-4px);
+    border-color: var(--glass-border-strong);
+    box-shadow: var(--shadow-lg), var(--shadow-lamp);
+  }
+
+  .sl-book:hover .sl-book__spine {
+    transform: rotate(-1.5deg) translateY(-2px);
+  }
+}
+
+/* --- the cover: drawn from the book's own title, never a stock image --- */
+
+.sl-book__cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(246, 193, 119, 0.16), transparent 60%),
+    linear-gradient(160deg, var(--ink-600), var(--ink-800));
+  overflow: hidden;
+}
+
+.sl-book__spine {
+  display: grid;
+  align-content: space-between;
+
+  /* Sized from the cover's height rather than its width: the box changes shape
+     between layouts, and a width-driven spine overflowed it on the short one. */
+  height: 76%;
+  width: auto;
+  aspect-ratio: 5 / 7;
+  max-width: 60%;
+  padding: var(--space-3);
+  border-radius: 4px 10px 10px 4px;
+  border: 1px solid rgba(148, 170, 226, 0.18);
+  border-left: 4px solid var(--lamp-500);
+  background: linear-gradient(135deg, rgba(45, 58, 92, 0.95), rgba(17, 26, 48, 0.95));
+  box-shadow: var(--shadow-md);
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.sl-book__initial {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--lamp-300);
+}
+
+.sl-book__spine-rules {
+  display: grid;
+  gap: 5px;
+}
+
+.sl-book__spine-rules span {
+  display: block;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: rgba(148, 170, 226, 0.25);
+}
+
+.sl-book__spine-rules span:nth-child(2) {
+  width: 78%;
+}
+
+.sl-book__spine-rules span:nth-child(3) {
+  width: 52%;
+}
+
+/* --- the text --- */
+
+.sl-book__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sl-book__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-bright);
+
+  /* Two lines, then an ellipsis: cards in a row must keep the same height. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sl-book__author {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sl-book__meta {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  align-items: center;
+  gap: var(--space-2);
+
+  /* Pushed to the foot of the card so the badges of a row share a line,
+     however many lines the title above them took. */
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.sl-book__category {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+
+  /* Shrinks to share the row with the availability badge rather than wrapping
+     under it. It never shrinks past legibility: below that it simply wraps. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * One column means a card as wide as the screen, and 3:2 of that is most of a
+ * phone. Below the two-column breakpoint the cover keeps a fixed height
+ * instead: the ratio would otherwise decide the width and leave the cover
+ * filling only half the card.
+ */
+@media (max-width: 519px) {
+  .sl-book__cover {
+    aspect-ratio: auto;
+    height: 156px;
+  }
+}
+
+/* A real cover fills the box; the drawn spine keeps its own proportions. */
+.sl-book__cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/* ---------- a grid of these cards ---------- */
+/* Here rather than in one page's stylesheet, because every screen that
+   shows a shelf of cards needs it: the home page's preview and the
+   catalogue both, and neither should depend on the other's CSS. */
+
+.sl-books {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+@media (min-width: 520px) {
+  .sl-books {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .sl-books {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1140px) {
+  .sl-books {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* The loading state keeps the grid's shape so nothing jumps when it fills. */
+.sl-books__placeholder {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}

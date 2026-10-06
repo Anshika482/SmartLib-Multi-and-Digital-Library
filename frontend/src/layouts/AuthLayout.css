@@ -1,0 +1,102 @@
+.sl-auth {
+  display: grid;
+  min-height: 100dvh;
+  grid-template-columns: 1fr;
+}
+
+.sl-auth__pitch {
+  display: none;
+}
+
+.sl-auth__panel {
+  display: grid;
+  align-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+}
+
+.sl-auth__card {
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: var(--space-6);
+}
+
+.sl-auth__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.sl-auth__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(140deg, var(--lamp-300), var(--accent-500) 70%, var(--violet-500));
+  box-shadow: var(--shadow-lamp);
+}
+
+.sl-auth__wordmark {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-bright);
+}
+
+/* From tablet width there is room for the room itself beside the form. */
+@media (min-width: 900px) {
+  .sl-auth {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .sl-auth__pitch {
+    display: grid;
+    align-content: center;
+    gap: var(--space-5);
+    padding: var(--space-8) var(--space-7);
+    border-right: 1px solid var(--glass-border);
+  }
+
+  .sl-auth__brand {
+    justify-content: flex-start;
+  }
+
+  .sl-auth__headline {
+    font-size: var(--text-3xl);
+    max-width: 18ch;
+  }
+
+  .sl-auth__sub {
+    max-width: 46ch;
+    color: var(--text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .sl-auth__notes {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .sl-auth__note {
+    display: flex;
+    gap: var(--space-3);
+    align-items: baseline;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .sl-auth__note::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--lamp-400);
+    box-shadow: 0 0 12px var(--lamp-400);
+  }
+}

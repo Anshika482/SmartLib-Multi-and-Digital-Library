@@ -93,6 +93,12 @@ Because development uses `ddl-auto=update`, Hibernate does not reliably widen an
 migration that widens `audit_events.action` or `target_type`, an existing `library_db` may need Flyway to apply the
 migration, or the `audit_events` table to be recreated locally.
 
+`V11__borrow_requests.sql` is one such migration: it appends `REQUEST_CREATED`, `REQUEST_APPROVED`, `REQUEST_REJECTED`
+and `REQUEST_CANCELLED` to `audit_events.action` and `REQUEST` to `target_type`. On a `library_db` created before it,
+approve a request and the audit write fails until those two `ALTER TABLE ... MODIFY COLUMN` statements - which the
+migration file lists verbatim - have been applied. A database created fresh needs nothing: Hibernate builds the column
+from the Java enum.
+
 ### Tests
 
 ```bash
@@ -126,9 +132,10 @@ start when:
 - the JVM's time zone differs from `APP_TIME_ZONE`, or date-times would not be stored in UTC;
 - `PAYMENT_GATEWAY_PROVIDER` is not `razorpay`, or its key id or secret is missing. The sandbox gateway marks fines
   paid while no money moves, and nothing inside the application would notice, so production refuses to start on it.
-- `CHAT_PROVIDER` is not `anthropic`, or `ANTHROPIC_API_KEY` is missing. The scripted assistant answers from a
-  keyword list, and a deployment left on it has an assistant in name only - every request succeeds, so nothing
-  inside the application reports it.
+- `CHAT_PROVIDER` is neither `gemini` nor `anthropic`, or the key belonging to the one named is missing. The
+  scripted assistant answers from a keyword list, and a deployment left on it has an assistant in name only - every
+  request succeeds, so nothing inside the application reports it. Naming one provider while setting only the other's
+  key is refused for the same reason: it would 503 every question.
 
 ## Environment variables
 
@@ -139,6 +146,8 @@ start when:
 | `DB_USERNAME` | production | `root` in development | Database account; in production a dedicated one |
 | `DB_PASSWORD` | yes | - | Database password; blank is refused |
 | `JWT_SECRET` | yes | - | HS256 signing key, at least 32 bytes |
+| `COVERS_DIRECTORY` | no | `./data/covers` | Where book cover images are stored. The database holds only a key |
+| `COVERS_MAX_SIZE_BYTES` | no | `2097152` | Largest accepted cover image, in bytes |
 | `JWT_ISSUER` | yes | - | Issuer stamped on, and required of, every access token |
 | `JWT_AUDIENCE` | yes | - | Audience stamped on, and required of, every access token |
 | `APP_TIME_ZONE` | no | `Asia/Kolkata` | Business time zone; the JVM must run in it |
@@ -156,6 +165,10 @@ start when:
 | `MAIL_USERNAME` | no | - | SMTP account; also the fallback From address |
 | `MAIL_PASSWORD` | no | - | That account's password |
 | `MAIL_FROM` | production | `MAIL_USERNAME` | Address reset messages come from |
+| `NOTIFICATION_REMINDERS_ENABLED` | no | `true` | Whether due-soon and overdue reminders are sent at all |
+| `NOTIFICATION_REMINDERS_INTERVAL` | no | `PT6H` | How often the reminder sweep runs |
+| `NOTIFICATION_REMINDERS_DUE_SOON_DAYS` | no | `3` | How many days ahead of its due date a loan is "due soon" |
+| `NOTIFICATION_REMINDERS_BATCH_SIZE` | no | `200` | The most loans one reminder pass considers, of each kind |
 | `MAIL_STARTTLS` | no | `true` | Upgrade the SMTP connection to TLS |
 | `APP_RESET_LINK_BASE_URL` | production | empty - nothing sent | Page the reset link points to; the token is added to it |
 | `PAYMENT_GATEWAY_KEY_ID` | no | empty - no online payment | Razorpay key id; public, sent to the browser |
@@ -165,8 +178,11 @@ start when:
 | `PAYMENT_GATEWAY_CONNECT_TIMEOUT` | no | `PT3S` | How long to wait for a connection to the provider; zero or less is refused |
 | `PAYMENT_GATEWAY_READ_TIMEOUT` | no | `PT8S` | How long to wait for its answer; zero or less is refused |
 | `PAYMENT_CURRENCY` | no | `INR` | Currency fines are charged in, ISO 4217 |
-| `CHAT_PROVIDER` | production | `scripted` | `anthropic` for Claude, or `scripted`; anything else stops startup |
-| `ANTHROPIC_API_KEY` | production | - | Provider key; read once into the SDK client, never logged or returned |
+| `CHAT_PROVIDER` | production | `scripted` | `gemini`, `anthropic`, or `scripted`; anything else stops startup |
+| `GEMINI_API_KEY` | with `gemini` | - | Provider key; read once into the SDK client, never logged or returned |
+| `GEMINI_MODEL` | no | `gemini-3.5-flash-lite` | Which Gemini model answers |
+| `GEMINI_THINKING_LEVEL` | no | `minimal` | How much the model deliberates, and so how long a caller waits; must be one the model accepts |
+| `ANTHROPIC_API_KEY` | with `anthropic` | - | Provider key; read once into the SDK client, never logged or returned |
 | `CHAT_MODEL` | no | `claude-opus-5` | Which Claude model answers |
 | `CHAT_CONNECT_TIMEOUT` | no | `PT5S` | How long to wait for a connection to the provider |
 | `CHAT_READ_TIMEOUT` | no | `PT30S` | How long to wait for its answer |
@@ -199,6 +215,10 @@ starts; Hibernate then only validates the schema.
 | `V6__audit_loan_actions.sql` | Widens the audit action and target enums to cover loans and fines |
 | `V7__payments.sql` | `payments`, one row per online fine payment attempt: references, amount and status |
 | `V8__digital_resources.sql` | `digital_resources`, what a library offers to read online: a URL, never a file |
+| `V9__registration.sql` | Self-registration: adds `ROLE_SUPER_ADMIN`, `users.registration_status`, and four audit actions |
+| `V10__book_covers.sql` | `books.cover_image_key`, an opaque storage key - cover images are files, never rows |
+| `V11__borrow_requests.sql` | `borrow_requests`, the step before a loan, plus four audit actions and the `REQUEST` target |
+| `V12__notifications.sql` | `notification_log`, whose unique key is what makes every notification send once |
 
 - The database must already exist, and the account needs rights to create and alter tables in it.
 - An applied migration is never edited: Flyway checksums it and refuses to start if it changed. A schema change is a new
@@ -425,14 +445,30 @@ also be paid by card, in two steps, by the member who owes it or by staff on the
 `POST /api/chat` with `{"message": "How do I pay a fine?"}` answers one question for any signed-in account, and
 returns `{"reply", "assistant", "answeredAt"}`.
 
-- **Two assistants, one endpoint.** `CHAT_PROVIDER=anthropic` answers with Claude through the official SDK;
-  `scripted`, the default, matches keywords against a fixed script, calls no provider and needs no key. Development
-  and the test suite run on the script, so neither needs a credential and no request leaves the machine. An unknown
-  provider name stops startup, and naming `anthropic` without a key stops it too - an assistant that 503s every
-  question is worse than a deployment that will not start.
-- **Production runs the real assistant or does not start.** Under the `prod` profile a missing, blank or
-  non-`anthropic` provider, or a missing key, stops startup - the script is a development default and must not
-  reach production, where "I cannot answer that yet" to every question looks exactly like a working assistant.
+- **Three assistants, one endpoint.** `CHAT_PROVIDER=gemini` answers with Gemini through Google's Gen AI SDK;
+  `anthropic` answers with Claude through the Anthropic SDK, and is kept configured so a deployment can be moved
+  back by changing that one setting; `scripted`, the default, matches keywords against a fixed script, calls no
+  provider and needs no key. Development and the test suite run on the script, so neither needs a credential and no
+  request leaves the machine. An unknown provider name stops startup, and naming a provider without its own key
+  stops it too - an assistant that 503s every question is worse than a deployment that will not start.
+- **Latency is a setting, not a mystery.** Gemini thinks before it answers, and those tokens come before any of
+  the reply, so for a question answered from a handful of catalogue rows they are most of the wait. The default
+  pairing is a lite model at `minimal`, chosen by measuring this project's own questions: 1.4s on average against
+  7-8s for `gemini-3.8-flash` at `low`, which had one reply take 22s. `gemini-3.8-flash` at `high` was refused on
+  every call. The levels a model accepts differ and **do not overlap** - `gemini-3.8-flash` takes `low`/`medium`/
+  `high`, the lite models take `minimal`/`high` - so `GEMINI_MODEL` and `GEMINI_THINKING_LEVEL` move together.
+  An unrecognised level stops startup; one the model will not serve is refused per request, because only the
+  provider knows which it serves. Each answer logs its elapsed milliseconds and its prompt, thought and answer
+  token counts - numbers only, never a word of the question. `MAX_OUTPUT_TOKENS` is deliberately *not* tightened
+  to the three sentences the prompt asks for: it is a hard cutoff over thinking *and* answer together, so a tight
+  cap can be spent entirely on thinking and return nothing.
+- **One prompt, whichever provider.** The rules, the privacy constraints and the catalogue fence are built by
+  `AssistantPrompt` and shared, so switching provider cannot switch the rules with it. Each provider differs only in
+  how it is called: earlier turns go in the SDK's own conversation slots - `user` and `assistant` for Claude, `user`
+  and `model` for Gemini - never pasted into the instruction, which is the server's and is rebuilt every request.
+- **Production runs a real assistant or does not start.** Under the `prod` profile a missing, blank or unrecognised
+  provider, or a missing key for the provider named, stops startup - the script is a development default and must
+  not reach production, where "I cannot answer that yet" to every question looks exactly like a working assistant.
 - **What is sent to the provider.** A system prompt naming the library and whether the caller is staff or a member,
   and the question itself. No username, email, account id, token, password or hash, and nothing about any other
   member. The prompt also forbids inventing fines, due dates, opening hours or anything about another member - the

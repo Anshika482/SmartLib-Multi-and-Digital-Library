@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.library.lms.dto.PagedResponse;
 import com.library.lms.dto.TransactionResponse;
+import com.library.lms.entity.NotificationKind;
 import com.library.lms.entity.AuditAction;
 import com.library.lms.entity.Book;
 import com.library.lms.entity.FinePaymentStatus;
@@ -130,11 +132,24 @@ public class TransactionService {
      */
     private final AuditService auditService;
 
+
+    /**
+     * Where notification events go.
+     *
+     * <p>Published, never sent. What is delivered, to whom, and whether it has
+     * already gone are {@code NotificationService}'s decisions - taken after
+     * this service's transaction commits, so nothing here waits on a mail
+     * server and no failure to send can undo what this service did.</p>
+     */
+    private final ApplicationEventPublisher events;
+
     public TransactionService(TransactionRepository transactionRepository,
                               BookRepository bookRepository,
                               UserRepository userRepository,
                               OverduePolicy overduePolicy,
-                              AuditService auditService) {
+                              AuditService auditService,
+            ApplicationEventPublisher events) {
+        this.events = events;
         this.transactionRepository = transactionRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
@@ -309,6 +324,12 @@ public class TransactionService {
         auditService.recordSuccess(AuditAction.BOOK_ISSUED, library.getId(), user.getId(),
                 AuditTarget.loan(issued.getId()));
 
+        // The borrower is told, once this commits, and on another thread - so a
+        // mail server that is down slows nothing at the desk and cannot undo a
+        // copy that has already been handed over.
+        events.publishEvent(new NotificationRequested(NotificationKind.BOOK_ISSUED, library.getId(),
+                borrower.getId(), issued.getId()));
+
         return toResponse(issued, issueDate);
     }
 
@@ -442,6 +463,13 @@ public class TransactionService {
 
         auditService.recordSuccess(AuditAction.BOOK_RETURNED, libraryId, staff.getId(),
                 AuditTarget.loan(returned.getId()));
+
+        // The borrower, not the member of staff who took it back: the message
+        // says what happened to their loan.
+        if (returned.getUser() != null) {
+            events.publishEvent(new NotificationRequested(NotificationKind.BOOK_RETURNED, libraryId,
+                    returned.getUser().getId(), returned.getId()));
+        }
 
         return toResponse(returned, returnDate);
     }
@@ -590,8 +618,13 @@ public class TransactionService {
         // filtered out after being read - it is never returned by the query,
         // which is why staff see it as an ordinary missing id and a member sees
         // the same refusal they get for any loan that is not theirs.
-        Optional<Transaction> transaction = transactionRepository
-                .findByIdAndLibraryId(transactionId, authenticatedUser.getLibrary().getId());
+        // A super administrator reads across libraries, so the scoped lookup
+        // would hide from them exactly the rows they are entitled to. Everyone
+        // else is scoped to their own, as before.
+        Optional<Transaction> transaction = seesEveryLibrary(authenticatedUser)
+                ? transactionRepository.findSystemWideById(transactionId)
+                : transactionRepository.findByIdAndLibraryId(transactionId,
+                        authenticatedUser.getLibrary().getId());
 
         if (maySeeAnyUsersActivity(authenticatedUser)) {
             return toResponse(transaction
@@ -650,16 +683,19 @@ public class TransactionService {
                                                                     int page, int size,
                                                                     String sortBy, String direction,
                                                                     String authenticatedUsername) {
-        // Unchanged: the library comes from the caller's own account, and is
-        // resolved before anything is read.
-        Long libraryId = authenticatedUser(authenticatedUsername).getLibrary().getId();
+        // The library comes from the caller's own account, and is resolved
+        // before anything is read. A super administrator reads across all of
+        // them; everyone else is bounded by their own.
+        User caller = authenticatedUser(authenticatedUsername);
+        Long libraryId = caller.getLibrary().getId();
 
         validatePagination(page, size);
 
         Pageable pageable = PageRequest.of(page, size, resolveSort(sortBy, direction));
 
-        Page<Transaction> transactions =
-                transactionRepository.findByBookIdAndLibraryId(bookId, libraryId, pageable);
+        Page<Transaction> transactions = seesEveryLibrary(caller)
+                ? transactionRepository.findSystemWideByBookId(bookId, pageable)
+                : transactionRepository.findByBookIdAndLibraryId(bookId, libraryId, pageable);
 
         return toPagedResponse(transactions, overduePolicy.today());
     }
@@ -703,7 +739,81 @@ public class TransactionService {
      * @return true for ADMIN and LIBRARIAN, false for everyone else
      */
     private boolean maySeeAnyUsersActivity(User user) {
-        return user.getRole() == Role.ROLE_ADMIN || user.getRole() == Role.ROLE_LIBRARIAN;
+        return user.getRole() == Role.ROLE_ADMIN
+                || user.getRole() == Role.ROLE_LIBRARIAN
+                || user.getRole() == Role.ROLE_SUPER_ADMIN;
+    }
+
+    /**
+     * Whether this account's authority runs past its own library.
+     *
+     * <p>True for ROLE_SUPER_ADMIN alone. That role is the deployment's, not a
+     * library's: it approves the applications that create libraries, so a view
+     * of one library's loans would be a view of a tenant it does not belong to
+     * rather than of the system it runs.
+     *
+     * <p><b>This widens reading only.</b> Issuing, returning and recording a
+     * payment are a desk's work and stay with ADMIN and LIBRARIAN, both in the
+     * filter chain and in the methods that perform them - none of which consults
+     * this.
+     *
+     * <p>Separate from {@link #maySeeAnyUsersActivity} because the two ask
+     * different questions. That one asks whose loans you may read; this asks
+     * whose library. A librarian may read any member's history and no other
+     * library's; a super administrator may read both.
+     */
+    private boolean seesEveryLibrary(User user) {
+        return user.getRole() == Role.ROLE_SUPER_ADMIN;
+    }
+
+    /**
+     * Loans with a fine still to settle.
+     *
+     * <p><b>The payable set, not the accruing one.</b> A fine can only be paid
+     * once the book is back - {@link #recordFinePayment} refuses an open loan,
+     * because its fine is still growing - so what this returns is loans that
+     * came back owing money that nobody has recorded as paid. Open overdue
+     * loans are not here; they are listed by
+     * {@link #getTransactionsByStatus(TransactionStatus, int, int, String, String, String)}
+     * with OVERDUE, which asks the dates. Two lists because they are two
+     * different things: what is owed now, and what is still mounting up.
+     *
+     * <p><b>Who sees what follows the existing rule exactly.</b> ADMIN and
+     * LIBRARIAN see their own library's; everybody else, a member included, sees
+     * only their own - decided by {@link #maySeeAnyUsersActivity}, the same
+     * method {@link #getTransactionsByUser} uses, so the two cannot drift apart.
+     * There is no user id in the signature, so a member has nothing to
+     * substitute.
+     *
+     * @param authenticatedUsername the caller's login name, from the
+     *                              authenticated principal and never from input
+     * @return one page of loans owing money, scoped to the caller's entitlement
+     * @throws InvalidPaginationException if page or size is out of range
+     * @throws InvalidSortException       if the sort field or direction is unsupported
+     */
+    public PagedResponse<TransactionResponse> getOutstandingFines(int page, int size, String sortBy,
+                                                                  String direction,
+                                                                  String authenticatedUsername) {
+        User caller = authenticatedUser(authenticatedUsername);
+        Long libraryId = caller.getLibrary().getId();
+
+        validatePagination(page, size);
+        Pageable pageable = PageRequest.of(page, size, resolveSort(sortBy, direction));
+
+        // The whole library for staff, one member's own for anybody else. Both
+        // queries carry the library; the member one carries the member as well.
+        Page<Transaction> fines;
+        if (seesEveryLibrary(caller)) {
+            fines = transactionRepository.findSystemWideByFinePaymentStatus(FinePaymentStatus.UNPAID, pageable);
+        } else if (maySeeAnyUsersActivity(caller)) {
+            fines = transactionRepository.findByFinePaymentStatusAndLibraryId(
+                    FinePaymentStatus.UNPAID, libraryId, pageable);
+        } else {
+            fines = transactionRepository.findByUserIdAndFinePaymentStatusAndLibraryId(
+                    caller.getId(), FinePaymentStatus.UNPAID, libraryId, pageable);
+        }
+
+        return toPagedResponse(fines, overduePolicy.today());
     }
 
     /**
@@ -778,8 +888,13 @@ public class TransactionService {
         // may ask for, the library decides which rows exist to be asked about.
         // A user id from another library matches nothing and yields the same
         // empty page as an account that has never borrowed anything.
-        Page<Transaction> transactions =
-                transactionRepository.findByUserIdAndLibraryId(userId, libraryId, pageable);
+        // A super administrator's reach is the deployment, so their read is not
+        // bounded by the library on their own account. Everyone else stays
+        // scoped: a user id from another library matches nothing and yields the
+        // same empty page as an account that has never borrowed anything.
+        Page<Transaction> transactions = seesEveryLibrary(authenticatedUser)
+                ? transactionRepository.findSystemWideByUserId(userId, pageable)
+                : transactionRepository.findByUserIdAndLibraryId(userId, libraryId, pageable);
 
         return toPagedResponse(transactions, overduePolicy.today());
     }
@@ -829,8 +944,11 @@ public class TransactionService {
                                                                       String sortBy, String direction,
                                                                       String authenticatedUsername) {
         // Unchanged from before pagination: the library comes from the caller's
-        // own account, and is resolved before anything is read.
-        Long libraryId = authenticatedUser(authenticatedUsername).getLibrary().getId();
+        // own account, and is resolved before anything is read. A super
+        // administrator's reads are not bounded by it.
+        User caller = authenticatedUser(authenticatedUsername);
+        Long libraryId = caller.getLibrary().getId();
+        boolean systemWide = seesEveryLibrary(caller);
 
         validatePagination(page, size);
 
@@ -845,13 +963,21 @@ public class TransactionService {
         // rather than by the stored status; RETURNED is exactly what is stored.
         // A switch over the enum, so a status added later does not compile here
         // until somebody decides which rows it means.
-        Page<Transaction> transactions = switch (status) {
-            case ISSUED -> transactionRepository.findByStatusInAndDueDateGreaterThanEqualAndLibraryId(
-                    OverduePolicy.OPEN_STATUSES, today, libraryId, pageable);
-            case OVERDUE -> transactionRepository.findByStatusInAndDueDateBeforeAndLibraryId(
-                    OverduePolicy.OPEN_STATUSES, today, libraryId, pageable);
-            case RETURNED -> transactionRepository.findByStatusAndLibraryId(status, libraryId, pageable);
-        };
+        Page<Transaction> transactions = systemWide
+                ? switch (status) {
+                    case ISSUED -> transactionRepository.findSystemWideByStatusInAndDueDateGreaterThanEqual(
+                            OverduePolicy.OPEN_STATUSES, today, pageable);
+                    case OVERDUE -> transactionRepository.findSystemWideByStatusInAndDueDateBefore(
+                            OverduePolicy.OPEN_STATUSES, today, pageable);
+                    case RETURNED -> transactionRepository.findSystemWideByStatus(status, pageable);
+                }
+                : switch (status) {
+                    case ISSUED -> transactionRepository.findByStatusInAndDueDateGreaterThanEqualAndLibraryId(
+                            OverduePolicy.OPEN_STATUSES, today, libraryId, pageable);
+                    case OVERDUE -> transactionRepository.findByStatusInAndDueDateBeforeAndLibraryId(
+                            OverduePolicy.OPEN_STATUSES, today, libraryId, pageable);
+                    case RETURNED -> transactionRepository.findByStatusAndLibraryId(status, libraryId, pageable);
+                };
 
         return toPagedResponse(transactions, today);
     }
@@ -984,14 +1110,28 @@ public class TransactionService {
             finePaymentStatus = paymentStatusFor(fineAmount);
         }
 
+        // Counted to the same day the fine above was, so the two can never
+        // disagree: today for an open loan, the return date for a closed one.
+        // Asked of OverduePolicy rather than worked out here, because the rule
+        // about when a loan is late exists in exactly one place.
+        LocalDate countedTo = overduePolicy.isOpen(transaction.getStatus())
+                ? today
+                : transaction.getReturnDate();
+        long daysOverdue = overduePolicy.daysOverdue(transaction.getDueDate(), countedTo);
+
+        Book book = transaction.getBook();
+
         return new TransactionResponse(
                 transaction.getId(),
-                transaction.getBook() != null ? transaction.getBook().getId() : null,
+                book != null ? book.getId() : null,
+                book != null ? book.getTitle() : null,
+                book != null ? book.getAuthor() : null,
                 transaction.getUser() != null ? transaction.getUser().getId() : null,
                 transaction.getIssueDate(),
                 transaction.getDueDate(),
                 transaction.getReturnDate(),
                 fineAmount,
+                daysOverdue,
                 status,
                 finePaymentStatus,
                 transaction.getFinePaidAt());

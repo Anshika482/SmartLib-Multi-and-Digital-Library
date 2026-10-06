@@ -131,6 +131,24 @@ public class User {
      *
      * <p>Defaults to true for the same two reasons as {@link #enabled}.</p>
      */
+    /**
+     * Whether this account was applied for, and whether that was settled.
+     *
+     * <p>Defaults to {@link RegistrationStatus#APPROVED} in Java and in the
+     * column, so every row that existed before registration did - and every
+     * account an administrator creates directly - is approved without anything
+     * having to be written to it.</p>
+     *
+     * <p>This does not gate authentication. {@code enabled} does, and a pending
+     * or rejected account is saved with {@code enabled = false}, so the refusal
+     * happens where it always has - in the authentication provider, with the
+     * same fixed message a wrong password gets.</p>
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_status", nullable = false, length = 20,
+            columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'APPROVED'")
+    private RegistrationStatus registrationStatus = RegistrationStatus.APPROVED;
+
     @Column(name = "account_non_locked", nullable = false,
             columnDefinition = "BOOLEAN NOT NULL DEFAULT TRUE")
     private boolean accountNonLocked = true;

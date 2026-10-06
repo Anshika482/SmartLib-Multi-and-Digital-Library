@@ -1,5 +1,6 @@
 package com.library.lms.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,6 +74,17 @@ class OptimisticLockingTest {
     private static final Long TRANSACTION_ID = 900L;
 
     private static final LocalDate DUE_DATE = LocalDate.now().plusDays(14);
+
+    /**
+     * Where notification events go.
+     *
+     * <p>Needed by {@code @InjectMocks} rather than by these tests, which are
+     * about issuing, returning and locking. Without it the publisher is null
+     * and the line that tells the borrower throws - hiding the behaviour these
+     * tests actually look for behind an unrelated failure.</p>
+     */
+    @Mock
+    private ApplicationEventPublisher events;
 
     @Mock
     private TransactionRepository transactionRepository;
@@ -294,7 +306,15 @@ class OptimisticLockingTest {
         Book book = book(3, 3);
         when(bookRepository.findByIdAndLibraryId(BOOK_ID, LIBRARY_ID)).thenReturn(Optional.of(book));
         memberIsKnown();
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(i -> i.getArgument(0));
+        // Given an id, as the database gives one on insert. Returning the
+        // argument untouched would hand back a loan with no id, which no real
+        // save ever does - and the notification published afterwards names the
+        // loan it is about.
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(i -> {
+            Transaction saved = i.getArgument(0);
+            saved.setId(TRANSACTION_ID);
+            return saved;
+        });
 
         TransactionResponse response = transactionService.issueBook(BOOK_ID, MEMBER_ID, CALLER, DUE_DATE);
 

@@ -1,0 +1,18 @@
+.sl-notfound {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  min-height: 60dvh;
+  text-align: center;
+}
+
+.sl-notfound__code {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  color: var(--lamp-400);
+}
+
+.sl-notfound__title {
+  font-size: var(--text-2xl);
+}

@@ -1,5 +1,6 @@
 package com.library.lms.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -60,6 +61,15 @@ class PaymentServiceTest {
 
     private static final String SIGNATURE = "0a1b";
 
+    /**
+     * Where notification events go.
+     *
+     * <p>Mocked because these tests are about the business rule, not about
+     * who is told. Passing a mock also demonstrates the point: this service
+     * only ever publishes, and never sends anything itself.</p>
+     */
+    private final ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+
     private final PaymentRepository paymentRepository = mock(PaymentRepository.class);
 
     private final TransactionRepository transactionRepository = mock(TransactionRepository.class);
@@ -71,7 +81,7 @@ class PaymentServiceTest {
     private final AuditService auditService = mock(AuditService.class);
 
     private final PaymentService service = new PaymentService(paymentRepository, transactionRepository,
-            userRepository, gateway, auditService, "INR");
+            userRepository, gateway, auditService, "INR", events);
 
     private Library library;
     private User member;

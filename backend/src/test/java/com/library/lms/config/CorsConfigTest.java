@@ -170,15 +170,55 @@ class CorsConfigTest {
         }
     }
 
-    @Test
-    void theDefaultComesFromTheEnvironmentAndIsEmpty() throws Exception {
-        Properties development = new Properties();
-        try (InputStream file = CorsConfigTest.class.getResourceAsStream("/application.properties")) {
-            assertThat(file).isNotNull();
-            development.load(file);
+    private static Properties load(String resource) throws Exception {
+        Properties properties = new Properties();
+        try (InputStream file = CorsConfigTest.class.getResourceAsStream(resource)) {
+            assertThat(file).as(resource).isNotNull();
+            properties.load(file);
         }
+        return properties;
+    }
 
-        assertThat(development.getProperty(CorsConfig.ALLOWED_ORIGINS_PROPERTY))
+    /**
+     * Development defaults to the Vite dev server.
+     *
+     * <p>It used to default to nothing, and that is what broke the browser: a
+     * browser sends Origin on every POST, including a same-origin one, so with
+     * no origin listed the CORS filter refused sign-in and the assistant before
+     * authentication ever ran.</p>
+     */
+    @Test
+    void theDevelopmentDefaultIsTheLocalDevServerAndIsStillOverridable() throws Exception {
+        assertThat(load("/application.properties").getProperty(CorsConfig.ALLOWED_ORIGINS_PROPERTY))
+                .isEqualTo("${CORS_ALLOWED_ORIGINS:http://localhost:5173}");
+    }
+
+    /**
+     * Production must not inherit that.
+     *
+     * <p>Spring reads the base file and then the prod file on top, so without a
+     * line of its own the prod profile would silently allow a developer's
+     * localhost origin. This asserts the prod file pins the property back to
+     * empty - no cross-origin browser access unless the deployment names an
+     * origin, which is the behaviour production has always had.</p>
+     */
+    @Test
+    void productionDoesNotInheritTheDevelopmentDefault() throws Exception {
+        String production = load("/application-prod.properties")
+                .getProperty(CorsConfig.ALLOWED_ORIGINS_PROPERTY);
+
+        assertThat(production)
+                .as("the prod profile must restate this, or it inherits the dev default")
                 .isEqualTo("${CORS_ALLOWED_ORIGINS:}");
+        assertThat(production).doesNotContain("localhost");
+    }
+
+    @Test
+    void noProfileShipsAWildcard() throws Exception {
+        for (String resource : List.of("/application.properties", "/application-prod.properties")) {
+            assertThat(load(resource).getProperty(CorsConfig.ALLOWED_ORIGINS_PROPERTY))
+                    .as(resource)
+                    .doesNotContain("*");
+        }
     }
 }

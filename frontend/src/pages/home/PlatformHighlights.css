@@ -1,0 +1,78 @@
+.sl-highlights {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+
+  /* Without these the UA's list padding pushes the cards out of line with
+     every other section on the page. */
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-highlight {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-5);
+  overflow: hidden;
+  transition:
+    transform var(--duration) var(--ease-out),
+    border-color var(--duration) var(--ease);
+}
+
+/* A wash of the card's own accent, revealed on hover. */
+.sl-highlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background: radial-gradient(120% 90% at 0% 0%, var(--highlight-glow), transparent 62%);
+  transition: opacity var(--duration-slow) var(--ease);
+}
+
+@media (hover: hover) {
+  .sl-highlight:hover {
+    transform: translateY(-4px);
+    border-color: var(--glass-border-strong);
+  }
+
+  .sl-highlight:hover::after {
+    opacity: 1;
+  }
+}
+
+.sl-highlight__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-bg-strong);
+  color: var(--highlight-ink);
+}
+
+.sl-highlight__title {
+  font-size: var(--text-lg);
+}
+
+.sl-highlight__text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+@media (min-width: 620px) {
+  .sl-highlights {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1040px) {
+  .sl-highlights {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

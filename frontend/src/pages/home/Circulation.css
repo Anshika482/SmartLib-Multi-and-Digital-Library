@@ -1,0 +1,49 @@
+.sl-circ {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+
+.sl-circ__card {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  height: 100%;
+  padding: var(--space-5);
+}
+
+.sl-circ__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-bg-strong);
+  color: var(--circ-ink, var(--accent-300));
+}
+
+.sl-circ__title {
+  font-size: var(--text-lg);
+}
+
+.sl-circ__text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sl-circ__note {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(45, 58, 92, 0.28);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+@media (min-width: 720px) {
+  .sl-circ {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

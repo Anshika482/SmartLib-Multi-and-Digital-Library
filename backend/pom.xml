@@ -43,6 +43,14 @@
         <anthropic.version>2.34.0</anthropic.version>
 
         <!--
+            Google Gen AI Java SDK, the current one - package com.google.genai,
+            which serves both the Gemini API and Vertex AI. This is not the
+            retired google-cloud-vertexai / VertexAI+GenerativeModel library;
+            that one is deprecated and its classes do not appear here.
+        -->
+        <genai.version>1.73.0</genai.version>
+
+        <!--
             GreenMail, the in-process SMTP server the mail tests send to. The 2.x
             line is the one built against Jakarta Mail 2.1, which is what Spring
             Boot 3 uses; 1.x targets the older javax.mail and would not run here.
@@ -204,6 +212,19 @@
         </dependency>
 
         <!--
+            Google Gen AI SDK: the client for Gemini, which answers a member's
+            question when the assistant is configured to use it. Here for the
+            same reason as the Anthropic SDK above - the vendor's own request
+            shapes and error types rather than hand-rolled HTTP - and equally
+            inert unless CHAT_PROVIDER names it and a key is set.
+        -->
+        <dependency>
+            <groupId>com.google.genai</groupId>
+            <artifactId>google-genai</artifactId>
+            <version>${genai.version}</version>
+        </dependency>
+
+        <!--
             Mail: the SMTP client that sends password reset links. Jakarta Mail
             plus Spring's JavaMailSender, configured from spring.mail.* - see
             application.properties. Nothing is sent unless a host is set, so a
@@ -336,7 +357,54 @@
                 <configuration>
                     <!-- Tests run in the business time zone, whatever the machine's is. -->
                     <argLine>-Duser.timezone=${app.time-zone}</argLine>
+                    <!--
+                        Quiet SQL for the suite only.
+
+                        The development profile turns on show-sql, format_sql and
+                        DEBUG on org.hibernate.SQL, which is right at a terminal
+                        running one request at a time. Across the whole suite it
+                        writes every statement twice, pretty-printed: a single
+                        full run produced a 322 MB log and spent most of its time
+                        in that I/O rather than in the tests.
+
+                        Set here as system properties rather than in a config
+                        file, because a src/test/resources/application.properties
+                        would shadow the main one entirely and take the datasource
+                        with it. System properties sit above both in Spring's
+                        order, so these three win and nothing else changes.
+
+                        Production is untouched and already sets its own values -
+                        ProductionDatabaseConfigurationTest asserts them.
+                    -->
+                    <systemPropertyVariables>
+                        <spring.jpa.show-sql>false</spring.jpa.show-sql>
+                        <spring.jpa.properties.hibernate.format_sql>false</spring.jpa.properties.hibernate.format_sql>
+                        <logging.level.org.hibernate.SQL>WARN</logging.level.org.hibernate.SQL>
+                    </systemPropertyVariables>
                     <environmentVariables>
+                        <!--
+                            The suite answers from the script, never from a
+                            provider.
+
+                            Not a preference: application.properties now imports
+                            backend/.env, which is where a developer keeps their
+                            own CHAT_PROVIDER and key, and the forked test JVM
+                            reads it too. A machine set up to run the app on
+                            Gemini therefore had the suite calling the real API -
+                            tests that assert an exact reply began failing against
+                            a model's wording, every run cost money, and a run
+                            needed the network. An environment variable sits above
+                            imported config in Spring's order, so this wins
+                            wherever the suite runs and whatever is in .env.
+
+                            The keys are blanked with it, so nothing can reach a
+                            provider even if a test names one. ChatConfigTest and
+                            ProductionChatValidatorTest pass their own throwaway
+                            keys as properties and are unaffected.
+                        -->
+                        <CHAT_PROVIDER>scripted</CHAT_PROVIDER>
+                        <GEMINI_API_KEY/>
+                        <ANTHROPIC_API_KEY/>
                         <JWT_SECRET>test-only-jwt-signing-secret-not-used-by-any-environment</JWT_SECRET>
                         <JWT_ISSUER>test-only-jwt-issuer</JWT_ISSUER>
                         <JWT_AUDIENCE>test-only-jwt-audience</JWT_AUDIENCE>

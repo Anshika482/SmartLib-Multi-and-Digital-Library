@@ -16,5 +16,16 @@ public enum CatalogueIntent {
     AVAILABILITY,
 
     /** What a particular book is. */
-    DETAILS
+    DETAILS,
+
+    /**
+     * Something worth reading, rather than one book the caller already named.
+     *
+     * <p>The only intent whose term may be empty: "suggest me a book" names no
+     * subject at all, and the answer is a handful of what the library actually
+     * holds. A topic - "books for learning Java" - narrows it, and is matched
+     * against title, author and category rather than title alone, because a
+     * subject is as likely to be the category as a word in the title.</p>
+     */
+    RECOMMENDATION
 }

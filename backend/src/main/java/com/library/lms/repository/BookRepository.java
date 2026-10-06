@@ -126,4 +126,8 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
      * database can stop at the first match.</p>
      */
     boolean existsByCategoryId(Long categoryId);
+
+    /** How many titles one library holds. Scoped by the parameter, like every other finder here. */
+    long countByLibraryId(Long libraryId);
+
 }

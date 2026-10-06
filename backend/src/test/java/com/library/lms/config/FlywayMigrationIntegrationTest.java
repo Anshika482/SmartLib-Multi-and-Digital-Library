@@ -180,14 +180,18 @@ class FlywayMigrationIntegrationTest {
                         "5 | audit events | SQL | true",
                         "6 | audit loan actions | SQL | true",
                         "7 | payments | SQL | true",
-                        "8 | digital resources | SQL | true");
+                        "8 | digital resources | SQL | true",
+                        "9 | registration | SQL | true",
+                        "10 | book covers | SQL | true",
+                        "11 | borrow requests | SQL | true",
+                        "12 | notifications | SQL | true");
 
         assertThat(jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = ? ORDER BY table_name",
                 String.class, MIGRATED))
-                .containsExactly("audit_events", "books", "categories", "digital_resources", "flyway_schema_history",
-                        "libraries", "password_reset_tokens", "payments", "refresh_tokens", "transactions",
-                        "users");
+                .containsExactly("audit_events", "books", "borrow_requests", "categories", "digital_resources",
+                        "flyway_schema_history", "libraries", "notification_log", "password_reset_tokens",
+                        "payments", "refresh_tokens", "transactions", "users");
     }
 
     @Test

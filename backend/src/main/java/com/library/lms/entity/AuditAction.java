@@ -41,5 +41,35 @@ public enum AuditAction {
     BOOK_RETURNED,
 
     /** Staff recorded that a loan's fine was paid - or were refused. */
-    FINE_PAID
+    FINE_PAID,
+
+    /** Somebody registered themselves - as a member, or as an application awaiting approval. */
+    USER_REGISTERED,
+
+    /** A pending registration was approved, and the account became usable. */
+    REGISTRATION_APPROVED,
+
+    /** A pending registration was refused. The account stays disabled. */
+    REGISTRATION_REJECTED,
+
+    /** A new library was applied for, together with the account that would administer it. */
+    LIBRARY_APPLIED,
+
+    /**
+     * A member asked for a book.
+     *
+     * <p>Appended, like every value before them: MySQL stores an ENUM by
+     * position, so these four go at the end and nothing already written changes
+     * meaning.</p>
+     */
+    REQUEST_CREATED,
+
+    /** Staff agreed to a request. The book is not issued by this alone. */
+    REQUEST_APPROVED,
+
+    /** Staff refused a request. */
+    REQUEST_REJECTED,
+
+    /** A member withdrew their own request. */
+    REQUEST_CANCELLED
 }

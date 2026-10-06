@@ -1,0 +1,18 @@
+/*
+ * The page is a single column of sections; each section owns its own vertical
+ * rhythm through .sl-section, so there is nothing to space here. The hero is
+ * pulled up under the header, which is where the artwork wants to start.
+ */
+.sl-home {
+  display: block;
+}
+
+.sl-home > .sl-hero {
+  margin-top: 0;
+}
+
+/* Dividers between sections: a hairline that fades out at both ends. */
+.sl-home .sl-section + .sl-section {
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, var(--glass-border-strong) 30%, var(--glass-border-strong) 70%, transparent) 1;
+}

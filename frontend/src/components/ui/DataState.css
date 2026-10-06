@@ -1,0 +1,36 @@
+.sl-state {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+}
+
+.sl-state__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-bg);
+  color: var(--text-muted);
+}
+
+.sl-state--error .sl-state__icon {
+  border-color: rgba(244, 118, 123, 0.35);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.sl-state__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-bright);
+}
+
+.sl-state__detail {
+  max-width: 46ch;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

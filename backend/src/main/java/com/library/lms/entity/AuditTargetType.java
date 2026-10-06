@@ -8,5 +8,8 @@ public enum AuditTargetType {
     LIBRARY,
 
     /** A loan: one transaction row, by its id. */
-    LOAN
+    LOAN,
+
+    /** A member's request for a book, by its id. Appended, like every value before it. */
+    REQUEST
 }

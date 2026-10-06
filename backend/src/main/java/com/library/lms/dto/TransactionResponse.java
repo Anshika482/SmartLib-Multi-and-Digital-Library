@@ -46,6 +46,19 @@ public class TransactionResponse {
     /** The borrowed book, by id - never the Book object. */
     private Long bookId;
 
+    /**
+     * The book's title and author, flattened off the Book.
+     *
+     * <p>Here so a loans screen is one request rather than one per row. Two
+     * plain fields rather than a nested Book, for the reason
+     * {@code BookResponse} flattens its category: returning the entity would
+     * publish the database structure and mean every column added to Book
+     * silently appears in every loan.</p>
+     */
+    private String bookTitle;
+
+    private String bookAuthor;
+
     /** The borrower, by id - never the User object, and never their details. */
     private Long userId;
 
@@ -63,6 +76,20 @@ public class TransactionResponse {
      * fines were calculated.
      */
     private Double fineAmount;
+
+    /**
+     * How many days past its due date this loan is.
+     *
+     * <p>Counted to today for an open loan and to the return date for one that
+     * came back, by the same {@code OverduePolicy} that works out the fine. It
+     * is sent rather than left to the client on purpose: a screen that
+     * subtracted two dates itself would be a second implementation of the
+     * overdue rule, and the two would eventually disagree about what day it
+     * is.</p>
+     *
+     * <p>Zero for a loan that is not late, which is not the same as null.</p>
+     */
+    private long daysOverdue;
 
     private TransactionStatus status;
 

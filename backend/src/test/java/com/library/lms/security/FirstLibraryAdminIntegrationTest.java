@@ -216,13 +216,24 @@ class FirstLibraryAdminIntegrationTest {
 
         List<String> fields = new ArrayList<>();
         admin.fieldNames().forEachRemaining(fields::add);
+        // Exhaustive on purpose: the point is not which fields are here but
+        // that nothing else is, so a field added to UserResponse has to be
+        // looked at rather than shipped. fullName, libraryId and
+        // registrationStatus arrived with self-registration.
         assertThat(fields)
                 .as("an account description with no password and no hash")
-                .containsExactlyInAnyOrder("id", "username", "email", "role", "enabled", "accountNonLocked");
+                .containsExactlyInAnyOrder("id", "username", "email", "fullName", "role", "enabled",
+                        "accountNonLocked", "libraryId", "registrationStatus");
+        assertThat(fields)
+                .as("no credential ever travels in an account description")
+                .doesNotContain("password", "passwordHash", "hash", "token");
         assertThat(admin.path("username").asText()).as("stored trimmed").isEqualTo(username);
         assertThat(admin.path("role").asText()).isEqualTo("ROLE_ADMIN");
         assertThat(admin.path("enabled").asBoolean()).isTrue();
         assertThat(admin.path("accountNonLocked").asBoolean()).isTrue();
+        assertThat(admin.path("registrationStatus").asText())
+                .as("an administrator the bootstrap created is approved by definition")
+                .isEqualTo("APPROVED");
 
         User stored = userRepository.findByUsername(username).orElseThrow();
         assertThat(stored.getId()).isEqualTo(admin.path("id").asLong());

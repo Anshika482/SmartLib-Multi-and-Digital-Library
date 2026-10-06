@@ -1,0 +1,133 @@
+@import './tokens.css';
+
+/* --- reset, only what is actually needed --- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--text);
+  background-color: var(--ink-900);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+ * The room's lighting: two soft pools of colour over the dark base, fixed so
+ * they do not scroll with the content. Painted on a pseudo-element rather than
+ * the body background so a page can sit over it without repainting gradients.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(90ch 60ch at 12% -10%, rgba(108, 140, 255, 0.16), transparent 60%),
+    radial-gradient(70ch 50ch at 100% 0%, rgba(246, 193, 119, 0.1), transparent 55%),
+    radial-gradient(90ch 70ch at 50% 115%, rgba(139, 92, 246, 0.12), transparent 60%);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--text-bright);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--accent-300);
+  text-decoration-color: rgba(157, 184, 255, 0.35);
+  text-underline-offset: 3px;
+  transition: color var(--duration-fast) var(--ease);
+}
+
+a:hover {
+  color: var(--text-bright);
+}
+
+/*
+ * One focus style everywhere, and never removed. A keyboard user needs to see
+ * where they are more than a mouse user needs an unbroken outline.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent-300);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- shared primitives --- */
+
+.sl-shell {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .sl-shell {
+    padding-inline: var(--space-6);
+  }
+}
+
+/* Panels are the building block: glass over the lit background. */
+.sl-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.sl-muted {
+  color: var(--text-muted);
+}
+
+.sl-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.http.MediaType;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
@@ -469,6 +470,99 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * A registration missing something its kind requires.
+     *
+     * <p>400, with the sentence the exception carries: which field the chosen
+     * kind of registration needs. Nothing about who exists.</p>
+     */
+    /**
+     * A library that cannot be joined.
+     *
+     * <p>404, and the same answer whether it does not exist or has no approved
+     * administrator yet. Registration is public, so this must confirm nothing.
+     */
+    @ExceptionHandler(LibraryNotJoinableException.class)
+    public ResponseEntity<ErrorResponse> handleLibraryNotJoinable(LibraryNotJoinableException exception) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                exception.getMessage(),
+                LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /** A cover that is not an accepted image, or not the image it claimed. 400. */
+    @ExceptionHandler(UnsupportedCoverImageException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedCover(UnsupportedCoverImageException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /** A cover over the size limit. 413, which is what "too large" means in HTTP. */
+    @ExceptionHandler(CoverImageTooLargeException.class)
+    public ResponseEntity<ErrorResponse> handleCoverTooLarge(CoverImageTooLargeException exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ErrorResponse(
+                HttpStatus.PAYLOAD_TOO_LARGE.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * An upload larger than the container will even accept.
+     *
+     * <p>Spring rejects it before any controller runs, so it arrives as this
+     * rather than as the exception above. Same answer either way.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooLarge(MaxUploadSizeExceededException exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ErrorResponse(
+                HttpStatus.PAYLOAD_TOO_LARGE.value(), "That file is too large to upload.", LocalDateTime.now()));
+    }
+
+    /** A cover that is not there. 404. */
+    @ExceptionHandler(CoverImageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCoverNotFound(CoverImageNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * The cover store itself failed. 500.
+     *
+     * <p>The message says nothing about the store: where it is and what went
+     * wrong with it are in the log, for the operator.
+     */
+    @ExceptionHandler(CoverImageStorageException.class)
+    public ResponseEntity<ErrorResponse> handleCoverStorage(CoverImageStorageException exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(InvalidRegistrationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRegistration(InvalidRegistrationException exception) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * A decision about a registration that is not awaiting one.
+     *
+     * <p>409: the request was well formed and the caller was allowed to make
+     * it, but the thing it names is not in a state to be decided.</p>
+     */
+    @ExceptionHandler(RegistrationNotPendingException.class)
+    public ResponseEntity<ErrorResponse> handleRegistrationNotPending(RegistrationNotPendingException exception) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handles an attempt to create an account with a role that cannot be
      * granted.
      *
@@ -513,6 +607,76 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * A request that is not in the caller's library, or never existed.
+     *
+     * <p>404 for both, deliberately. Telling the two apart would turn the id
+     * into a way to count a neighbouring library's queue.</p>
+     */
+    @ExceptionHandler(BorrowRequestNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowRequestNotFound(BorrowRequestNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * A member already has a live request for this book.
+     *
+     * <p>409 rather than 400: the call was well formed, and it will succeed
+     * once the earlier request is decided or withdrawn.</p>
+     */
+    @ExceptionHandler(DuplicateBorrowRequestException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateBorrowRequest(DuplicateBorrowRequestException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(
+                HttpStatus.CONFLICT.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * The request is not in a state this move allows.
+     *
+     * <p>409, and the message names the state it is actually in - which is what
+     * a client with a stale screen needs in order to reload rather than retry.</p>
+     */
+    @ExceptionHandler(BorrowRequestStateException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowRequestState(BorrowRequestStateException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(
+                HttpStatus.CONFLICT.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * The caller may not act on this request at all.
+     *
+     * <p>403 rather than 404, because this one is reached only when the request
+     * is already known to be in the caller's library: the fact being withheld
+     * is not whether it exists but whether it is theirs, and they can see that
+     * for themselves on their own list.</p>
+     */
+    @ExceptionHandler(BorrowRequestNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowRequestNotAllowed(BorrowRequestNotAllowedException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /**
+     * The caller may not read reports.
+     *
+     * <p>403 rather than 404: the endpoint plainly exists, and hiding that from
+     * a signed-in member buys nothing - what is withheld is the data, and none
+     * of it is in this answer.</p>
+     */
+    @ExceptionHandler(ReportAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleReportAccessDenied(ReportAccessDeniedException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), exception.getMessage(), LocalDateTime.now()));
+    }
+
+    /** Dates that cannot be counted over. 400, and the message says which rule was broken. */
+    @ExceptionHandler(InvalidReportRangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidReportRange(InvalidReportRangeException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), exception.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(BookNotAvailableException.class)

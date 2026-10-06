@@ -1,5 +1,6 @@
 package com.library.lms.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,6 +74,17 @@ class TransactionServiceAuditTest {
     private static final long STAFF_ID = 11L;
 
     private static final long LOAN_ID = 4242L;
+
+    /**
+     * Where notification events go.
+     *
+     * <p>Needed by {@code @InjectMocks} rather than by these tests, which are
+     * about issuing, returning and locking. Without it the publisher is null
+     * and the line that tells the borrower throws - hiding the behaviour these
+     * tests actually look for behind an unrelated failure.</p>
+     */
+    @Mock
+    private ApplicationEventPublisher events;
 
     @Mock
     private TransactionRepository transactionRepository;

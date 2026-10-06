@@ -1,0 +1,34 @@
+.sl-signin {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sl-signin__head {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sl-signin__title {
+  font-size: var(--text-2xl);
+}
+
+.sl-signin__form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.sl-signin__error {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid rgba(244, 118, 123, 0.28);
+  border-radius: var(--radius-md);
+}
+
+.sl-signin__foot {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+}

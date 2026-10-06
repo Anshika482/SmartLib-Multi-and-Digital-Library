@@ -1,0 +1,61 @@
+.sl-roles {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-role {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-5);
+  border-top: 2px solid var(--role-ink);
+  transition: transform var(--duration) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .sl-role:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.sl-role__name {
+  font-size: var(--text-lg);
+  color: var(--role-ink);
+}
+
+.sl-role__text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sl-role__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.sl-role__list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  align-items: baseline;
+  color: var(--text);
+}
+
+.sl-role__tick {
+  color: var(--role-ink);
+}
+
+@media (min-width: 820px) {
+  .sl-roles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

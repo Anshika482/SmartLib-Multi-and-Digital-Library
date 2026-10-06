@@ -1,0 +1,114 @@
+/*
+ * SMARTLIB design tokens.
+ *
+ * One place for every colour, space, radius and shadow the interface uses.
+ * Components refer to these names and never to a literal value, so the whole
+ * aesthetic moves from here rather than from a hunt through stylesheets.
+ *
+ * The palette is a reading room after dark: deep navy walls, charcoal
+ * furniture, and warm lamplight falling across them, with the cool blue and
+ * violet of a screen for accents. Warm and cool are deliberately both present -
+ * an interface of only cool greys reads as a dashboard, not a library.
+ */
+
+:root {
+  /* --- surfaces: the room itself, darkest first --- */
+  --ink-900: #070b16;
+  --ink-800: #0b1122;
+  --ink-700: #111a30;
+  --ink-600: #18223d;
+  --ink-500: #212d4c;
+  --ink-400: #2d3a5c;
+
+  /* --- glass: panels lit from behind --- */
+  --glass-bg: rgba(24, 34, 61, 0.55);
+  --glass-bg-strong: rgba(17, 26, 48, 0.82);
+  --glass-border: rgba(148, 170, 226, 0.14);
+  --glass-border-strong: rgba(148, 170, 226, 0.26);
+  --glass-blur: 18px;
+
+  /* --- lamplight: the warm side --- */
+  --lamp-300: #ffd9a0;
+  --lamp-400: #f6c177;
+  --lamp-500: #e0a458;
+  --lamp-glow: rgba(246, 193, 119, 0.16);
+
+  /* --- accents: the cool side --- */
+  --accent-300: #9db8ff;
+  --accent-400: #6c8cff;
+  --accent-500: #4f6ef7;
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+  --accent-glow: rgba(108, 140, 255, 0.22);
+
+  /* --- meaning --- */
+  --success: #5ecb9a;
+  --warning: var(--lamp-400);
+  --danger: #f4767b;
+  --danger-soft: rgba(244, 118, 123, 0.12);
+
+  /* --- text --- */
+  --text-bright: #f4f7ff;
+  --text: #dbe3f5;
+  --text-muted: #96a3c2;
+  --text-faint: #6b789a;
+
+  /* --- type --- */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+
+  /* --- space: a 4px rhythm --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* --- shape --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-pill: 999px;
+
+  /* --- depth --- */
+  --shadow-sm: 0 1px 2px rgba(3, 6, 14, 0.4);
+  --shadow-md: 0 10px 30px -12px rgba(3, 6, 14, 0.7);
+  --shadow-lg: 0 28px 70px -24px rgba(3, 6, 14, 0.85);
+  --shadow-lamp: 0 0 60px -12px var(--lamp-glow);
+
+  /* --- motion: short, eased, and honest about being optional --- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration: 220ms;
+  --duration-slow: 420ms;
+
+  /* --- layout --- */
+  --shell-max: 1240px;
+  --sidebar-w: 264px;
+  --header-h: 68px;
+}
+
+/*
+ * Someone who has asked their system to reduce motion means it. Transitions
+ * become instant rather than merely shorter - a slow fade is still motion.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration: 0ms;
+    --duration-slow: 0ms;
+  }
+}

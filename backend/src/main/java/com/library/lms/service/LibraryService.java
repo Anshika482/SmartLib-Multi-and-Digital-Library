@@ -208,8 +208,11 @@ public class LibraryService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getFullName(),
                 user.getRole(),
                 user.isEnabled(),
-                user.isAccountNonLocked());
+                user.isAccountNonLocked(),
+                user.getLibrary() == null ? null : user.getLibrary().getId(),
+                user.getRegistrationStatus());
     }
 }

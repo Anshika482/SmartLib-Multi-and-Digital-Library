@@ -1,0 +1,56 @@
+.sl-field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sl-field__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.sl-field__input {
+  width: 100%;
+  min-height: 46px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-bright);
+  background: rgba(7, 11, 22, 0.55);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    background-color var(--duration) var(--ease);
+}
+
+.sl-field__input::placeholder {
+  color: var(--text-faint);
+}
+
+.sl-field__input:hover {
+  border-color: rgba(148, 170, 226, 0.4);
+}
+
+.sl-field__input:focus {
+  outline: none;
+  border-color: var(--accent-400);
+  background: rgba(7, 11, 22, 0.75);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+.sl-field.is-invalid .sl-field__input {
+  border-color: var(--danger);
+}
+
+.sl-field.is-invalid .sl-field__input:focus {
+  box-shadow: 0 0 0 4px var(--danger-soft);
+}
+
+.sl-field__message {
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+}
+
+.sl-field.is-invalid .sl-field__message {
+  color: var(--danger);
+}

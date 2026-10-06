@@ -171,6 +171,33 @@ public class TransactionController {
      * scoping bounds whose loans are returned but not how many. All four
      * parameters are optional, so the URL is unchanged.</p>
      */
+    /**
+     * GET /api/transactions/fines - loans with a fine still to settle.
+     *
+     * <p>No id in the path, and none accepted: staff get their own library's,
+     * and anybody else gets their own. Which of the two is decided by the
+     * service from the authenticated account, so there is nothing here a member
+     * could point at somebody else.</p>
+     *
+     * <p>The literal {@code /fines} does not clash with
+     * {@code /api/transactions/{transactionId}} - Spring always prefers an exact
+     * path segment over a variable one, as with {@code /api/books/search}.</p>
+     *
+     * <p>These are the fines that can actually be paid. A book still out is
+     * accruing a fine that is not settled yet; those appear in the OVERDUE
+     * status list instead.</p>
+     */
+    @GetMapping("/fines")
+    public ResponseEntity<PagedResponse<TransactionResponse>> getOutstandingFines(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dueDate") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            Authentication authentication) {
+        return ResponseEntity.ok(transactionService.getOutstandingFines(
+                page, size, sortBy, direction, authentication.getName()));
+    }
+
     @GetMapping("/book/{bookId}")
     public ResponseEntity<PagedResponse<TransactionResponse>> getTransactionsByBook(
             @PathVariable @Positive(message = "Book id must be a positive number") Long bookId,

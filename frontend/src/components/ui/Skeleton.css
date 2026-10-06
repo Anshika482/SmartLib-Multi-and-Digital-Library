@@ -1,0 +1,37 @@
+.sl-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: rgba(45, 58, 92, 0.45);
+}
+
+/*
+ * The shimmer is a single pass of light, slow and low contrast - closer to a
+ * reflection moving over glass than to a loading bar.
+ */
+.sl-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(157, 184, 255, 0.12) 45%,
+    rgba(246, 193, 119, 0.08) 55%,
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: sl-skeleton-sweep 1.6s var(--ease) infinite;
+}
+
+@keyframes sl-skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-skeleton::after {
+    animation: none;
+  }
+}

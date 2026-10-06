@@ -7,12 +7,14 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.library.lms.dto.PaymentOrderResponse;
 import com.library.lms.dto.PaymentResponse;
 import com.library.lms.dto.PaymentVerificationRequest;
+import com.library.lms.entity.NotificationKind;
 import com.library.lms.entity.AuditAction;
 import com.library.lms.entity.FinePaymentStatus;
 import com.library.lms.entity.Payment;
@@ -81,13 +83,26 @@ public class PaymentService {
 
     private final String currency;
 
+
+    /**
+     * Where notification events go.
+     *
+     * <p>Published, never sent. What is delivered, to whom, and whether it has
+     * already gone are {@code NotificationService}'s decisions - taken after
+     * this service's transaction commits, so nothing here waits on a mail
+     * server and no failure to send can undo what this service did.</p>
+     */
+    private final ApplicationEventPublisher events;
+
     public PaymentService(PaymentRepository paymentRepository,
                           TransactionRepository transactionRepository,
                           UserRepository userRepository,
                           PaymentGateway gateway,
                           AuditService auditService,
                           @org.springframework.beans.factory.annotation.Value("${payment.currency:INR}")
-                          String currency) {
+                          String currency,
+            ApplicationEventPublisher events) {
+        this.events = events;
         this.paymentRepository = paymentRepository;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -255,6 +270,16 @@ public class PaymentService {
 
         log.info("Fine paid online for loan id={} by user id={} in library id={}",
                 loan.getId(), caller.getId(), libraryId);
+
+        // A receipt, to whoever owes the fine rather than whoever pressed pay -
+        // staff may settle a member's fine, and the receipt is the member's. It
+        // carries the amount and the title, and no payment reference: a
+        // provider's reference in an inbox is of no use to the reader and of
+        // some use to anybody else.
+        if (loan.getUser() != null) {
+            events.publishEvent(new NotificationRequested(NotificationKind.FINE_RECEIPT, libraryId,
+                    loan.getUser().getId(), loan.getId()));
+        }
 
         return toResponse(payment, loan);
     }

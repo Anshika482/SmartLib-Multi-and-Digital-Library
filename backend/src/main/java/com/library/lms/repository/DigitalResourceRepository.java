@@ -38,4 +38,11 @@ public interface DigitalResourceRepository extends JpaRepository<DigitalResource
 
     /** One book's enabled resources, within a library. */
     Page<DigitalResource> findByLibraryIdAndBookIdAndEnabledTrue(Long libraryId, Long bookId, Pageable pageable);
+
+    /** How many resources one library has, including the ones it has turned off. */
+    long countByLibraryId(Long libraryId);
+
+    /** How many a member of that library can actually open. */
+    long countByLibraryIdAndEnabledTrue(Long libraryId);
+
 }

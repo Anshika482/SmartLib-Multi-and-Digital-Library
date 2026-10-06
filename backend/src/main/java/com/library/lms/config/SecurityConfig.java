@@ -56,6 +56,14 @@ public class SecurityConfig {
      * {@code ROLE_ROLE_ADMIN}, an authority no account will ever hold, which
      * fails closed and silently locks out the very people it names.</p>
      */
+    /**
+     * System level, across every library.
+     *
+     * <p>Only ever granted by the system mechanism that creates such an
+     * account. No request can ask for it and no registration can produce it.
+     */
+    private static final String SUPER_ADMIN = "ROLE_SUPER_ADMIN";
+
     private static final String ADMIN = "ROLE_ADMIN";
 
     private static final String LIBRARIAN = "ROLE_LIBRARIAN";
@@ -191,6 +199,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password", "/api/auth/reset-password")
                                 .permitAll()
 
+                        // Registration is public: a member joins, and a librarian or
+                        // administrator applies. The role is never taken from the
+                        // request - RegistrationService maps a registration type to a
+                        // role from a fixed table with no privileged entry - and a
+                        // pending account is saved disabled, so it cannot sign in
+                        // until somebody approves it. Rate limited in the controller.
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+
+                        // Deciding on them is not. An administrator decides librarian
+                        // applications to their own library; a super administrator
+                        // decides administrator applications, which open a library.
+                        // Which of the two a caller is, and whose applications they
+                        // may see, is settled again in the service against the
+                        // authenticated account.
+                        .requestMatchers("/api/registrations/**").hasAnyAuthority(SUPER_ADMIN, ADMIN)
+
                         // Health probes, for callers that have no token: a load
                         // balancer, an orchestrator, a monitor. GET only, and these
                         // exact paths only - a health component path such as
@@ -199,6 +223,42 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/liveness",
                                 "/actuator/health/readiness", "/actuator/info").permitAll()
 
+                        // The public catalogue: bibliographic search and the list of
+                        // libraries, for a visitor who has not signed in. GET only, so a
+                        // POST or DELETE under this prefix falls through to
+                        // anyRequest().authenticated() rather than being allowed by the
+                        // prefix. PublicCatalogueController is the only thing mapped
+                        // here, and it returns records that carry no ids, no copy counts
+                        // and nothing about members, loans, fines or resources.
+                        .requestMatchers(HttpMethod.GET, "/api/public/catalogue", "/api/public/libraries")
+                                .permitAll()
+
+                        // Cover images. Setting or removing one is a catalogue edit, so
+                        // it sits with the other book writes; reading one is a catalogue
+                        // read. These come first because "/api/books/**" below would
+                        // otherwise claim the write methods for staff only and leave the
+                        // GET to the generic rule - which is right, but stating it here
+                        // keeps the whole sub-resource legible in one place.
+                        // Which library the book belongs to is settled again in
+                        // BookCoverService, from the caller's account.
+                        .requestMatchers(HttpMethod.POST, "/api/books/*/cover").hasAnyAuthority(ADMIN, LIBRARIAN)
+                        .requestMatchers(HttpMethod.PUT, "/api/books/*/cover").hasAnyAuthority(ADMIN, LIBRARIAN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/books/*/cover").hasAnyAuthority(ADMIN, LIBRARIAN)
+                        .requestMatchers(HttpMethod.GET, "/api/books/*/cover").authenticated()
+
+                        // The dashboard. Authenticated, and nothing more: which figures
+                        // it carries is decided by DashboardService from the caller's own
+                        // account, so there is no role rule to state here and no way for
+                        // a request to ask for somebody else's.
+                        // Reports are staff work, and a super administrator's span
+                        // every library. No method named, so HEAD is covered too -
+                        // Spring MVC serves it from the GET handler, and a GET-only
+                        // rule would let a member's HEAD fall through to the
+                        // authenticated() rules below and run the staff query.
+                        .requestMatchers("/api/reports/**").hasAnyAuthority(ADMIN, LIBRARIAN, SUPER_ADMIN)
+
+                        .requestMatchers(HttpMethod.GET, "/api/dashboard").authenticated()
+
                         .requestMatchers(HttpMethod.POST, "/api/books").hasAnyAuthority(ADMIN, LIBRARIAN)
                         .requestMatchers(HttpMethod.PUT, "/api/books/**").hasAnyAuthority(ADMIN, LIBRARIAN)
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasAnyAuthority(ADMIN, LIBRARIAN)
@@ -206,6 +266,40 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/categories").hasAnyAuthority(ADMIN, LIBRARIAN)
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasAnyAuthority(ADMIN, LIBRARIAN)
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasAnyAuthority(ADMIN, LIBRARIAN)
+
+                        // ---------- borrowing requests ----------
+                        //
+                        // The member's three paths first, because they are more
+                        // specific than the queue rule below and a first match wins.
+                        // Each is .authenticated() rather than a role rule: the
+                        // question is not what role the caller holds but whose
+                        // request it is, and only BorrowRequestService knows that.
+                        // It refuses anything that is not the caller's own.
+                        .requestMatchers(HttpMethod.GET, "/api/borrow-requests/mine").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/borrow-requests/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/borrow-requests").authenticated()
+
+                        // Deciding on somebody else's request is desk work. Named
+                        // before the catch-all GET so approving cannot fall through
+                        // to it.
+                        .requestMatchers(HttpMethod.POST, "/api/borrow-requests/*/approve")
+                        .hasAnyAuthority(ADMIN, LIBRARIAN)
+                        .requestMatchers(HttpMethod.POST, "/api/borrow-requests/*/reject")
+                        .hasAnyAuthority(ADMIN, LIBRARIAN)
+                        .requestMatchers(HttpMethod.POST, "/api/borrow-requests/*/issue")
+                        .hasAnyAuthority(ADMIN, LIBRARIAN)
+
+                        // The whole library's queue. No method named, so HEAD is
+                        // covered too - Spring MVC serves HEAD from the GET handler,
+                        // and a GET-only rule would let a member's HEAD fall through
+                        // to the authenticated() rule below and run the staff query.
+                        .requestMatchers("/api/borrow-requests").hasAnyAuthority(ADMIN, LIBRARIAN)
+
+                        // One request by id: a member's own, or any in a staff
+                        // caller's library. Which of the two is decided by the
+                        // service, which answers not-found rather than refused when
+                        // the request is somebody else's.
+                        .requestMatchers(HttpMethod.GET, "/api/borrow-requests/*").authenticated()
 
                         .requestMatchers(HttpMethod.POST, "/api/transactions/issue").hasAnyAuthority(ADMIN, LIBRARIAN)
                         .requestMatchers(HttpMethod.POST, "/api/transactions/*/return").hasAnyAuthority(ADMIN, LIBRARIAN)
@@ -232,8 +326,16 @@ public class SecurityConfig {
                         // so a member's HEAD fell through to the authenticated() rules
                         // below and ran the staff-only query. Without a method, the rule
                         // covers every verb on the path.
-                        .requestMatchers("/api/transactions/book/**").hasAnyAuthority(ADMIN, LIBRARIAN)
-                        .requestMatchers("/api/transactions/status/**").hasAnyAuthority(ADMIN, LIBRARIAN)
+                        // SUPER_ADMIN is here for reading only. Their authority is the
+                        // deployment's rather than one library's, so a view bounded by
+                        // the library on their own account showed them almost nothing.
+                        // The service answers these across every library for that role
+                        // and for no other. Issuing, returning and recording a payment
+                        // are desk work and stay with ADMIN and LIBRARIAN above.
+                        .requestMatchers("/api/transactions/book/**")
+                        .hasAnyAuthority(ADMIN, LIBRARIAN, SUPER_ADMIN)
+                        .requestMatchers("/api/transactions/status/**")
+                        .hasAnyAuthority(ADMIN, LIBRARIAN, SUPER_ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/transactions/**").authenticated()
 
                         // Your own account: any signed-in account, members
@@ -300,7 +402,11 @@ public class SecurityConfig {
                         // decision someone made rather than a default nobody
                         // noticed. ChatService scopes every answer to the
                         // caller's own library.
-                        .requestMatchers(HttpMethod.POST, "/api/chat").authenticated()
+                        // The assistant answers visitors as well as members. The
+                        // controller picks the path from the established identity, and
+                        // the visitor path resolves no account and reads no library-
+                        // scoped data. Rate limited per address in the controller.
+                        .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
 
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions

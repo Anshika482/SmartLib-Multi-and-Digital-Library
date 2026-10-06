@@ -13,8 +13,11 @@ import org.springframework.context.annotation.Configuration;
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.core.Timeout;
+import com.google.genai.Client;
+import com.google.genai.types.HttpOptions;
 import com.library.lms.service.AiChatService;
 import com.library.lms.service.AnthropicAiChatService;
+import com.library.lms.service.GeminiAiChatService;
 import com.library.lms.service.ScriptedAiChatService;
 
 /**
@@ -26,9 +29,16 @@ import com.library.lms.service.ScriptedAiChatService;
  *       script, no provider, no network call and no key. Development and the
  *       tests run on this, so CI needs no credential and no request ever leaves
  *       the machine.</li>
+ *   <li>{@code gemini} - Gemini, through Google's Gen AI SDK, with the key from
+ *       {@code GEMINI_API_KEY}.</li>
  *   <li>{@code anthropic} - Claude, through the official SDK, with the key from
- *       {@code ANTHROPIC_API_KEY}.</li>
+ *       {@code ANTHROPIC_API_KEY}. Kept so a deployment can be moved back to it
+ *       by changing one setting.</li>
  * </ul>
+ *
+ * <p><b>Each provider reads its own key.</b> Naming one and setting the other's
+ * key stops startup, rather than starting an instance that answers every
+ * question with a 503 because it is holding a credential for somewhere else.</p>
  *
  * <p><b>An unknown name stops startup</b> rather than falling back. A typo in
  * the provider must not leave a deployment quietly answering with the script
@@ -54,6 +64,8 @@ public class ChatConfig {
 
     static final String ANTHROPIC = "anthropic";
 
+    static final String GEMINI = "gemini";
+
     static final String PROVIDER_PROPERTY = "chat.provider";
 
     static final String CONNECT_TIMEOUT_PROPERTY = "chat.anthropic.connect-timeout";
@@ -61,6 +73,10 @@ public class ChatConfig {
     static final String READ_TIMEOUT_PROPERTY = "chat.anthropic.read-timeout";
 
     static final String REQUEST_TIMEOUT_PROPERTY = "chat.anthropic.request-timeout";
+
+    static final String GEMINI_API_KEY_PROPERTY = "chat.gemini.api-key";
+
+    static final String GEMINI_THINKING_LEVEL_PROPERTY = "chat.gemini.thinking-level";
 
     private static final Logger log = LoggerFactory.getLogger(ChatConfig.class);
 
@@ -71,7 +87,11 @@ public class ChatConfig {
             @Value("${chat.anthropic.model:claude-opus-5}") String model,
             @Value("${chat.anthropic.connect-timeout:PT5S}") String connectTimeout,
             @Value("${chat.anthropic.read-timeout:PT30S}") String readTimeout,
-            @Value("${chat.anthropic.request-timeout:PT45S}") String requestTimeout) {
+            @Value("${chat.anthropic.request-timeout:PT45S}") String requestTimeout,
+            @Value("${chat.gemini.api-key:}") String geminiApiKey,
+            @Value("${chat.gemini.model:" + GeminiAiChatService.DEFAULT_MODEL + "}") String geminiModel,
+            @Value("${chat.gemini.thinking-level:" + GeminiAiChatService.DEFAULT_THINKING_LEVEL + "}")
+            String geminiThinkingLevel) {
         String name = provider == null || provider.isBlank()
                 ? SCRIPTED
                 : provider.trim().toLowerCase(Locale.ROOT);
@@ -79,6 +99,21 @@ public class ChatConfig {
         if (SCRIPTED.equals(name)) {
             log.info("Assistant: provider='{}' - answers from a fixed script, no provider is called", SCRIPTED);
             return new ScriptedAiChatService();
+        }
+
+        if (GEMINI.equals(name)) {
+            Timeout timeout = timeouts(connectTimeout, readTimeout, requestTimeout);
+            requireGeminiKey(geminiApiKey);
+            String thinking = thinkingLevel(geminiThinkingLevel);
+
+            // Whether a key is present, never its value, and never its length -
+            // which would say which kind of key it is. The thinking level is here
+            // because it is the setting that decides how long a caller waits, and
+            // the startup line is where somebody looks first.
+            log.info("Assistant: provider='{}' model='{}' thinking='{}' requestTimeout={} key=present",
+                    GEMINI, geminiModel, thinking, timeout.request());
+
+            return new GeminiAiChatService(geminiClient(geminiApiKey, timeout), geminiModel, thinking);
         }
 
         if (ANTHROPIC.equals(name)) {
@@ -95,7 +130,25 @@ public class ChatConfig {
         }
 
         throw new IllegalStateException(PROVIDER_PROPERTY + " is not an assistant this application has. Set"
-                + " CHAT_PROVIDER to " + ANTHROPIC + ", or to " + SCRIPTED + " for local development and CI.");
+                + " CHAT_PROVIDER to " + GEMINI + " or " + ANTHROPIC + ", or to " + SCRIPTED + " for local"
+                + " development and CI.");
+    }
+
+    /**
+     * The Gen AI SDK client, with its one timeout bounded.
+     *
+     * <p>The SDK takes a single timeout in milliseconds rather than the three
+     * the Anthropic client takes, so the request timeout is the one that
+     * applies - it is the bound that matters to somebody waiting on an
+     * answer.</p>
+     */
+    private static Client geminiClient(String apiKey, Timeout timeout) {
+        return Client.builder()
+                .apiKey(apiKey.trim())
+                .httpOptions(HttpOptions.builder()
+                        .timeout(Math.toIntExact(timeout.request().toMillis()))
+                        .build())
+                .build();
     }
 
     /** The SDK client, with every timeout bounded. */
@@ -129,6 +182,43 @@ public class ChatConfig {
                 .write(read)
                 .request(request)
                 .build();
+    }
+
+    /**
+     * The configured thinking level, or a refusal naming the setting.
+     *
+     * <p>Checked at startup rather than per request: an unrecognised level is
+     * rejected by the provider, which would mean every question answered with a
+     * 503 for the sake of one misspelt word. Whether the level is one the
+     * <em>model</em> accepts is the provider's to say - the values differ per
+     * model - so this only catches what is not a level at all.</p>
+     *
+     * @throws IllegalStateException if it is not one of the known levels
+     */
+    static String thinkingLevel(String configured) {
+        String level = configured == null ? "" : configured.trim().toLowerCase(Locale.ROOT);
+
+        if (level.isEmpty()) {
+            return GeminiAiChatService.DEFAULT_THINKING_LEVEL;
+        }
+
+        if (!GeminiAiChatService.THINKING_LEVELS.contains(level)) {
+            throw new IllegalStateException(GEMINI_THINKING_LEVEL_PROPERTY + " is not a thinking level. Set"
+                    + " GEMINI_THINKING_LEVEL to one of " + GeminiAiChatService.THINKING_LEVELS
+                    + ", or leave it unset for " + GeminiAiChatService.DEFAULT_THINKING_LEVEL + ". Which of them a"
+                    + " particular model accepts differs: gemini-3.8-flash takes low, medium and high, and the"
+                    + " smaller -flash-lite models take minimal and high.");
+        }
+
+        return level;
+    }
+
+    private static void requireGeminiKey(String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(GEMINI_API_KEY_PROPERTY + " is not set. Set GEMINI_API_KEY to the key"
+                    + " for the assistant's provider, or set CHAT_PROVIDER to " + SCRIPTED + " to answer from the"
+                    + " script instead.");
+        }
     }
 
     private static void requireKey(String apiKey) {

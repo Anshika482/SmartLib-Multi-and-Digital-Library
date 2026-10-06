@@ -1,0 +1,165 @@
+/* Reports: a filter bar, cards of headline figures, and plain tables. */
+
+.sl-report__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+}
+
+.sl-report__field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.sl-report__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sl-report__input {
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  color: var(--text-bright);
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color-scheme: dark;
+}
+
+.sl-report__input:focus-visible {
+  outline: 2px solid var(--lamp-300);
+  outline-offset: 1px;
+}
+
+.sl-report__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.sl-report__warning {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--lamp-300);
+}
+
+/* ---------- headline figures ---------- */
+
+.sl-report__section {
+  margin-top: var(--space-6);
+}
+
+.sl-report__section-title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.sl-report__stats {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-report__stat {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+  padding: var(--space-4) var(--space-5);
+}
+
+.sl-report__stat-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sl-report__stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  color: var(--text-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-report__stat-value--attention {
+  color: var(--lamp-300);
+}
+
+/* ---------- tables ---------- */
+
+.sl-report__table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+.sl-report__table th,
+.sl-report__table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  overflow-wrap: anywhere;
+}
+
+.sl-report__table thead th {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sl-report__table tbody tr:last-child th,
+.sl-report__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sl-report__number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-report__none {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  color: var(--text-muted);
+}
+
+/* ---------- bars ---------- */
+
+.sl-report__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 6rem;
+}
+
+.sl-report__bar-fill {
+  display: block;
+  height: 0.55rem;
+  min-width: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--lamp-300);
+}
+
+.sl-report__bar-fill--returns {
+  background: var(--glass-border-strong);
+}
+
+.sl-report__bar-value {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}

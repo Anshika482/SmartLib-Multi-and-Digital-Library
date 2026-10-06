@@ -1,0 +1,47 @@
+/* The overview layout: the grid each section lays its cards out on,
+   and the activity list. The card itself is in StatCard.css. */
+
+.sl-stats {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-dash__section {
+  margin-top: var(--space-6);
+}
+
+.sl-dash__section-title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.sl-activity {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-activity__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--glass-border);
+  font-size: var(--text-sm);
+}
+
+.sl-activity__row:last-child {
+  border-bottom: 0;
+}
+
+.sl-activity__when {
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}

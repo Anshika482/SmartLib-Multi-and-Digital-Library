@@ -1,0 +1,151 @@
+.sl-assistant {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.sl-assistant::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 90% at 100% 0%, rgba(167, 139, 250, 0.2), transparent 62%),
+    radial-gradient(60% 80% at 0% 100%, rgba(108, 140, 255, 0.16), transparent 60%);
+}
+
+.sl-assistant__copy {
+  display: grid;
+  gap: var(--space-3);
+  align-content: center;
+}
+
+.sl-assistant__title {
+  font-size: var(--text-2xl);
+}
+
+.sl-assistant__text {
+  max-width: 52ch;
+  color: var(--text-muted);
+}
+
+.sl-assistant__points {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sl-assistant__points li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: baseline;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+
+.sl-assistant__tick {
+  color: var(--violet-400);
+}
+
+.sl-assistant__actions {
+  margin-top: var(--space-3);
+}
+
+/* --- the sample exchange --- */
+
+.sl-assistant__demo {
+  display: grid;
+  gap: var(--space-3);
+  align-content: center;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-bg-strong);
+}
+
+.sl-assistant__demo-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sl-bubble {
+  max-width: 88%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.sl-bubble--asked {
+  justify-self: end;
+  border-bottom-right-radius: var(--radius-sm);
+  background: rgba(108, 140, 255, 0.16);
+  border: 1px solid rgba(108, 140, 255, 0.28);
+  color: var(--text-bright);
+}
+
+.sl-bubble--answered {
+  justify-self: start;
+  border-bottom-left-radius: var(--radius-sm);
+  background: rgba(45, 58, 92, 0.5);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+}
+
+/* Three dots, breathing. The assistant thinking, not a progress bar. */
+.sl-assistant__typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+}
+
+.sl-assistant__typing span[aria-hidden] {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--violet-400);
+  opacity: 0.4;
+  animation: sl-typing 1.4s var(--ease) infinite;
+}
+
+.sl-assistant__typing span[aria-hidden]:nth-of-type(3) { animation-delay: 160ms; }
+.sl-assistant__typing span[aria-hidden]:nth-of-type(4) { animation-delay: 320ms; }
+
+@keyframes sl-typing {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-assistant__typing span[aria-hidden] {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+@media (min-width: 900px) {
+  .sl-assistant {
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: stretch;
+    padding: var(--space-8);
+  }
+
+  /* The sample sits in the middle of its column rather than at the top, so
+     the two halves read as one panel instead of two stacked blocks. */
+  .sl-assistant__demo {
+    align-content: center;
+  }
+}

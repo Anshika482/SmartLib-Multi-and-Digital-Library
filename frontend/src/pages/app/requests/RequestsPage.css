@@ -1,0 +1,125 @@
+/* The two request screens share a row: a book on the left, its state and the
+   actions available on it on the right. */
+
+.sl-requests {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-requests__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.sl-requests__main {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.sl-requests__title {
+  color: var(--text-bright);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.sl-requests__author {
+  margin: 0.15rem 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.sl-requests__aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sl-requests__note {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+}
+
+.sl-requests__failure {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  color: var(--lamp-300);
+}
+
+/* ---------- the due date, on the queue that can issue ---------- */
+
+.sl-requests__due {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+}
+
+.sl-requests__due-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sl-requests__due-input {
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  color: var(--text-bright);
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color-scheme: dark;
+}
+
+.sl-requests__due-input:focus-visible {
+  outline: 2px solid var(--lamp-300);
+  outline-offset: 1px;
+}
+
+/* ---------- queue tabs ---------- */
+
+.sl-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.sl-tabs__tab {
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+
+.sl-tabs__tab--on {
+  color: var(--text-bright);
+  border-color: var(--glass-border-strong);
+  background: var(--glass-fill);
+}
+
+.sl-tabs__tab:focus-visible {
+  outline: 2px solid var(--lamp-300);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-tabs__tab {
+    transition: none;
+  }
+}

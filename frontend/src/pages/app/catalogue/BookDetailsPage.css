@@ -1,0 +1,134 @@
+/* One book's page: the cover beside its facts, then what it has online, then
+   where borrowing will happen. */
+
+.sl-details {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .sl-details {
+    /* The cover keeps a book's proportions; the facts take the rest. */
+    grid-template-columns: 10rem 1fr;
+    align-items: start;
+  }
+}
+
+.sl-details__cover {
+  aspect-ratio: 2 / 3;
+  max-width: 10rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.sl-details__facts {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  min-width: 0;
+}
+
+.sl-details__fact {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.sl-details__fact dt {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sl-details__fact dd {
+  margin: 0;
+  color: var(--text-bright);
+  /* A long title or an unbroken ISBN must not push the panel wider. */
+  overflow-wrap: anywhere;
+}
+
+.sl-details__isbn {
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-details__missing {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-5);
+}
+
+/* ---------- sections below the facts ---------- */
+
+.sl-details__section {
+  margin-top: var(--space-6);
+}
+
+.sl-details__section-title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+/* ---------- what is online ---------- */
+
+.sl-resources {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sl-resources__row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+}
+
+.sl-resources__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sl-resources__title {
+  color: var(--text-bright);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.sl-resources__detail {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ---------- borrowing ---------- */
+
+.sl-details__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.sl-details__cta-text {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.sl-details__cta-link {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sl-details__failure {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  color: var(--lamp-300);
+}

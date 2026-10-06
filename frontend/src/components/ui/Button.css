@@ -1,0 +1,77 @@
+.sl-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px; /* a comfortable target on a phone */
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none; /* AnchorButton renders a real <a> through these rules */
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.sl-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* The lift is small on purpose - it should feel like paper, not a spring. */
+.sl-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.sl-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.sl-button--primary {
+  color: var(--ink-900);
+  background: linear-gradient(135deg, var(--lamp-300), var(--lamp-400) 55%, var(--lamp-500));
+  box-shadow: 0 8px 24px -10px rgba(246, 193, 119, 0.7);
+}
+
+.sl-button--primary:not(:disabled):hover {
+  box-shadow: 0 14px 34px -12px rgba(246, 193, 119, 0.85);
+}
+
+.sl-button--ghost {
+  color: var(--text-bright);
+  background: var(--glass-bg);
+  border-color: var(--glass-border-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.sl-button--ghost:not(:disabled):hover {
+  border-color: var(--accent-400);
+  background: rgba(45, 58, 92, 0.65);
+}
+
+.sl-button--quiet {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.sl-button--quiet:not(:disabled):hover {
+  color: var(--text-bright);
+}
+
+.sl-button--block {
+  width: 100%;
+}
+
+.sl-button.is-busy .sl-button__label {
+  opacity: 0.75;
+}

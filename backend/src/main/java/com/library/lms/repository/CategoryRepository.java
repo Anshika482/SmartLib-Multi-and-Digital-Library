@@ -102,4 +102,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * {@code id <> ?} comparison never true, silently disabling the check.</p>
      */
     boolean existsByLibraryIdAndNameIgnoreCaseAndIdNot(Long libraryId, String name, Long id);
+
+    /** How many categories one library has. */
+    long countByLibraryId(Long libraryId);
+
 }

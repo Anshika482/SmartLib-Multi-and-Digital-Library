@@ -84,7 +84,8 @@ class FirstAdminBootstrapTest {
 
     private static LibraryResponse created() {
         return new LibraryResponse(7L, LIBRARY, null,
-                new UserResponse(11L, USERNAME, EMAIL, Role.ROLE_ADMIN, true, true));
+                new UserResponse(11L, USERNAME, EMAIL, "A Name", Role.ROLE_ADMIN, true, true, 7L,
+                        com.library.lms.entity.RegistrationStatus.APPROVED));
     }
 
     // ---------- a database that already has accounts ----------

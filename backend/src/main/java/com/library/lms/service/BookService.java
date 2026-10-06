@@ -639,6 +639,10 @@ public class BookService {
                 book.getCategory() != null ? book.getCategory().getId() : null,
                 book.getCategory() != null ? book.getCategory().getName() : null,
                 book.getTotalCopies(),
-                book.getAvailableCopies());
+                book.getAvailableCopies(),
+                book.getCoverImageKey() != null,
+                // The endpoint, not the key. A book with no cover gets null
+                // rather than a URL that would answer 404.
+                book.getCoverImageKey() == null ? null : "/api/books/" + book.getId() + "/cover");
     }
 }

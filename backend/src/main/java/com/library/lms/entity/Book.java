@@ -172,6 +172,25 @@ public class Book {
     private Library library;
 
     /** How many copies the library owns in total. */
+    /**
+     * Where this book's cover image is kept, or null when it has none.
+     *
+     * <p><b>A storage key, not a path and not the bytes.</b> The image itself
+     * lives outside the database - a row holds only the key that identifies it,
+     * so the column stays small and moving the images to object storage later
+     * changes the storage implementation and nothing here.</p>
+     *
+     * <p><b>Never returned by the API.</b> The key describes how this
+     * deployment stores files; a caller is given
+     * {@code /api/books/{id}/cover} instead, which reveals nothing about the
+     * storage and stays correct whatever it becomes.</p>
+     *
+     * <p>Nullable, because most books have no cover and every existing row has
+     * none. Nothing about a book without one behaves differently.</p>
+     */
+    @Column(name = "cover_image_key", length = 255)
+    private String coverImageKey;
+
     @Column(name = "total_copies", nullable = false)
     private Integer totalCopies;
 

@@ -64,7 +64,8 @@ class UserDirectoryIntegrationTest {
 
     /** The only fields an account response may carry. */
     private static final Set<String> PUBLIC_FIELDS =
-            Set.of("id", "username", "email", "role", "enabled", "accountNonLocked");
+            Set.of("id", "username", "email", "fullName", "role", "enabled", "accountNonLocked",
+                    "libraryId", "registrationStatus");
 
     /** Hashed once: BCrypt is slow on purpose, and every fixture account shares the password. */
     private static String encodedPassword;
@@ -463,8 +464,17 @@ class UserDirectoryIntegrationTest {
                     .doesNotContain("$2a$")
                     .doesNotContain("$2b$")
                     .doesNotContain("$2y$")
-                    .doesNotContainIgnoringCase("library")
                     .doesNotContainIgnoringCase("token");
+
+            // A libraryId is part of the contract now, and is just a number.
+            // What must still never appear is the Library itself - a nested
+            // object, or its name and creation time serialised alongside the
+            // account, which is what the old blanket check was guarding.
+            assertThat(body)
+                    .as("the library is referenced by id, never embedded")
+                    .doesNotContain("\"library\":")
+                    .doesNotContainIgnoringCase("libraryName")
+                    .doesNotContainIgnoringCase("createdAt");
         }
     }
 

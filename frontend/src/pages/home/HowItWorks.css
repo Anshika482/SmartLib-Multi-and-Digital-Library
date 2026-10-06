@@ -1,0 +1,57 @@
+.sl-steps {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  counter-reset: sl-step;
+}
+
+.sl-step {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+}
+
+.sl-step__number {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(246, 193, 119, 0.35);
+  background: linear-gradient(150deg, rgba(246, 193, 119, 0.2), rgba(108, 140, 255, 0.14));
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--lamp-300);
+}
+
+.sl-step__title {
+  font-size: var(--text-lg);
+}
+
+.sl-step__text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* The thread between steps, on wide screens only. */
+@media (min-width: 900px) {
+  .sl-steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .sl-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--space-6) + 21px);
+    right: calc(var(--space-4) * -1);
+    width: var(--space-4);
+    height: 1px;
+    background: linear-gradient(90deg, var(--glass-border-strong), transparent);
+  }
+}

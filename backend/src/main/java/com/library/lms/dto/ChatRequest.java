@@ -1,5 +1,8 @@
 package com.library.lms.dto;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -32,4 +35,22 @@ public class ChatRequest {
     @NotBlank(message = "A message is required")
     @Size(max = 1000, message = "A message must not exceed 1000 characters")
     private String message;
+
+    /**
+     * The conversation so far, as the client remembers it.
+     *
+     * <p>Optional: a first question has none, and the field may be absent
+     * entirely. Held here rather than on the server because the conversation
+     * belongs to the client having it - so there is no transcript stored to
+     * leak, none to keep beyond its use, and no server state in which a
+     * visitor's conversation and a member's could ever be confused.</p>
+     *
+     * <p><b>Untrusted, and bounded twice.</b> {@code @Size} refuses an absurd
+     * list at the boundary; {@code ConversationHistory} then trims what is left
+     * to a window the prompt can afford. Nothing in it grants anything - the
+     * caller's library and role come from their token on every request.</p>
+     */
+    @Valid
+    @Size(max = 40, message = "Too much conversation history was sent")
+    private List<ChatTurn> history;
 }

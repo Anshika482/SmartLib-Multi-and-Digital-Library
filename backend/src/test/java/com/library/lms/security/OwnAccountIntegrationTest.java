@@ -56,7 +56,8 @@ class OwnAccountIntegrationTest {
     private static final String PASSWORD = "own-account-test-password";
 
     private static final Set<String> PUBLIC_FIELDS =
-            Set.of("id", "username", "email", "role", "enabled", "accountNonLocked");
+            Set.of("id", "username", "email", "fullName", "role", "enabled", "accountNonLocked",
+                    "libraryId", "registrationStatus");
 
     private static String encodedPassword;
 

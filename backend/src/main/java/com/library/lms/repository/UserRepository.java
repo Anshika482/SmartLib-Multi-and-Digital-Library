@@ -1,11 +1,15 @@
 package com.library.lms.repository;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import com.library.lms.entity.RegistrationStatus;
+import com.library.lms.entity.Role;
 import com.library.lms.entity.User;
 
 /**
@@ -73,4 +77,52 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * @return the matching account, or empty if there is none
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * Whether a library has an administrator in this registration state.
+     *
+     * <p>What makes a library joinable. Derived rather than stored on the
+     * library, so the two cannot disagree: a library is open when somebody
+     * approved is running it.
+     */
+    boolean existsByLibraryIdAndRoleInAndRegistrationStatus(Long libraryId, Collection<Role> roles,
+            RegistrationStatus registrationStatus);
+
+    /**
+     * Applications of one role waiting for a decision, across every library.
+     *
+     * <p>Unscoped on purpose, and only ever called for administrator
+     * applications by a super administrator - the one caller whose authority is
+     * system-wide. Every other listing goes through the scoped method below.
+     */
+    List<User> findByRegistrationStatusAndRole(RegistrationStatus registrationStatus, Role role);
+
+    /** Applications of one role waiting for a decision, within one library. */
+    List<User> findByRegistrationStatusAndRoleAndLibraryId(RegistrationStatus registrationStatus, Role role,
+            Long libraryId);
+
+    /** How many accounts of one role a library has. */
+    long countByLibraryIdAndRole(Long libraryId, Role role);
+
+    /** How many applications of one role a library is waiting on. */
+    long countByLibraryIdAndRoleAndRegistrationStatus(Long libraryId, Role role,
+            RegistrationStatus registrationStatus);
+
+    /**
+     * How many applications of one role are waiting, across every library.
+     *
+     * <p>Unscoped, and only ever called for administrator applications by a
+     * super administrator - the one caller whose authority is system-wide.</p>
+     */
+    long countByRoleAndRegistrationStatus(Role role, RegistrationStatus registrationStatus);
+
+    /**
+     * How many accounts hold a role, across every library.
+     *
+     * <p>Unscoped, like the method above, and reached only from the super
+     * administrator branch of the reports and the dashboard - the one role
+     * whose authority is the deployment's rather than a library's.</p>
+     */
+    long countByRole(Role role);
+
 }

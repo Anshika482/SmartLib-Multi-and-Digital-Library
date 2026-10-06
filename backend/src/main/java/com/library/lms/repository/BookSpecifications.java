@@ -1,5 +1,7 @@
 package com.library.lms.repository;
 
+import jakarta.persistence.criteria.JoinType;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import com.library.lms.entity.Book;
@@ -79,6 +81,21 @@ public final class BookSpecifications {
     }
 
     /**
+     * Matches books in a category named this, case-insensitively.
+     *
+     * <p>By name rather than id because the name is what a person types and
+     * what the assistant extracts from a question - "do you have any science
+     * fiction" carries no id. Compared with both sides lowered, and passed as
+     * a bound parameter like every other comparison here.</p>
+     */
+    public static Specification<Book> hasCategoryNamed(String categoryName) {
+        String wanted = categoryName == null ? "" : categoryName.toLowerCase();
+
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(criteriaBuilder.lower(root.get("category").get("name")), wanted);
+    }
+
+    /**
      * Matches books whose title, author or ISBN contains the keyword.
      *
      * <p>The three comparisons are wrapped in a single {@code or(...)}, so the
@@ -91,6 +108,32 @@ public final class BookSpecifications {
      * behaviour the search endpoint has always had. The pattern is passed as a
      * bound parameter by the Criteria API, never concatenated into SQL.</p>
      */
+    /**
+     * Matches books whose title, author or category contains the term.
+     *
+     * <p>Like {@link #matchesKeyword(String)} but over the category instead of
+     * the ISBN, because this one answers a subject rather than an
+     * identifier: somebody asking for books on Java may want "Head First Java"
+     * by its title or anything filed under Programming, and nobody asks for a
+     * subject by ISBN.
+     *
+     * <p><b>The category is joined left, not inner.</b> Reaching through
+     * {@code root.get("category")} would join inner and quietly drop every book
+     * with no category - which for an {@code or(...)} is wrong twice over, since
+     * such a book should still match on its title. {@code hasCategoryNamed}
+     * above can join either way because it filters on the category itself; this
+     * cannot.
+     */
+    public static Specification<Book> matchesTopic(String term) {
+        String pattern = "%" + (term == null ? "" : term.toLowerCase()) + "%";
+
+        return (root, query, criteriaBuilder) -> criteriaBuilder.or(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern),
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("author")), pattern),
+                criteriaBuilder.like(
+                        criteriaBuilder.lower(root.join("category", JoinType.LEFT).get("name")), pattern));
+    }
+
     public static Specification<Book> matchesKeyword(String keyword) {
         String pattern = "%" + keyword.toLowerCase() + "%";
 

@@ -26,6 +26,11 @@ public record AuditTarget(AuditTargetType type, Long id) {
     }
 
     /** No record - the change was refused before one was identified. */
+    /** A member's request for a book. */
+    public static AuditTarget request(Long id) {
+        return new AuditTarget(AuditTargetType.REQUEST, id);
+    }
+
     public static AuditTarget none() {
         return new AuditTarget(null, null);
     }

@@ -57,4 +57,21 @@ public class BookResponse {
     private Integer totalCopies;
 
     private Integer availableCopies;
+
+    /**
+     * Whether this book has a cover image.
+     *
+     * <p>A boolean rather than a nullable URL so a client can decide what to
+     * draw without fetching anything.
+     */
+    private boolean hasCover;
+
+    /**
+     * Where to read the cover, or null when there is none.
+     *
+     * <p><b>An API path, never a storage key or a filesystem path.</b> It says
+     * nothing about how or where the image is kept, and stays correct if the
+     * storage moves to a bucket or a CDN.
+     */
+    private String coverUrl;
 }

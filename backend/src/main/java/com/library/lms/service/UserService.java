@@ -139,6 +139,7 @@ public class UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFullName(request.getFullName() == null ? null : request.getFullName().trim());
         user.setRole(request.getRole());
         user.setLibrary(library);
 
@@ -470,9 +471,12 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getFullName(),
                 user.getRole(),
                 user.isEnabled(),
-                user.isAccountNonLocked());
+                user.isAccountNonLocked(),
+                user.getLibrary() == null ? null : user.getLibrary().getId(),
+                user.getRegistrationStatus());
     }
 
     /**

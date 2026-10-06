@@ -1,0 +1,44 @@
+.sl-loader {
+  display: grid;
+  place-content: center;
+  gap: var(--space-4);
+  min-height: 100dvh;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.sl-loader__lamp {
+  justify-self: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(circle at 50% 40%, var(--lamp-300), var(--lamp-500) 62%, transparent 72%);
+  box-shadow: var(--shadow-lamp);
+  animation: sl-lamp-breathe 2.4s var(--ease) infinite;
+}
+
+.sl-loader__label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+}
+
+@keyframes sl-lamp-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* A pulsing light is still motion. Hold it steady instead. */
+@media (prefers-reduced-motion: reduce) {
+  .sl-loader__lamp {
+    animation: none;
+    opacity: 1;
+  }
+}

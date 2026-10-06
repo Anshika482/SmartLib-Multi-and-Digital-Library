@@ -67,6 +67,9 @@ public class CreateUserRequest {
      * the rest of what someone typed.</p>
      */
     @ToString.Exclude
+    @Size(max = 255, message = "Full name must not exceed 255 characters")
+    private String fullName;
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
     private String password;
