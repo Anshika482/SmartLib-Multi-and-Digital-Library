@@ -1,6 +1,7 @@
 .env
 *.log
-storage/
+# uploaded files (root and backend), not the Java package com/smartlib/common/storage
+/storage/
 backend/target/
 backend/storage/
 frontend/node_modules/
