@@ -248,3 +248,12 @@ SmartLib/
 - **Admin roles:** an Admin registration never grants access by itself. It needs a verified email and approval by the Super Admin, and a library's own Admin cannot approve another Admin. There is exactly one Super Admin, configured in `.env`, and it is never self-registered or shown as a demo account.
 - **Verification codes:** OTPs and links are stored only as HMAC hashes, are single-use, expire, and have attempt and resend limits.
 - **Audit logs:** they never record passwords, tokens, codes or payment secrets.
+
+## 9. License
+
+The SmartLib source code is released under the [MIT License](LICENSE).
+
+Third-party material keeps its own terms and is **not** covered by that license:
+- **Assistant avatar** (`frontend/public/brand/assistant-avatar.webp`): adapted from artwork owned by a third party. Replace it, or obtain permission, before any public or commercial use.
+- **Book covers and metadata**: loaded at runtime from Open Library and Google Books, under their terms.
+- **Fonts and libraries**: Plus Jakarta Sans and Caveat (SIL Open Font License), plus the npm and Maven dependencies, under their own licenses.
