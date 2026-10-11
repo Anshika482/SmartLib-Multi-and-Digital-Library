@@ -8,6 +8,7 @@ FROM maven:3.9-eclipse-temurin-21 AS backend-build
 WORKDIR /app/backend
 COPY backend/ ./
 COPY --from=frontend-build /app/frontend/dist/ ./src/main/resources/static/
+RUN echo "=== Frontend static files ===" && find ./src/main/resources/static -maxdepth 2 -type f
 RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
