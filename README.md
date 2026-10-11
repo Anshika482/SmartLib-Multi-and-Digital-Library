@@ -1,5 +1,7 @@
 # SmartLib
 
+[![CI](https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml/badge.svg)](https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml)
+
 **Multi-library management and digital learning platform.** It has a public cross-library catalogue, role-based dashboards (Member, Librarian, Admin, Super Admin), circulation with fines and Razorpay payments, digital resources, and a Google Gemini assistant grounded in the live catalogue.
 
 | Part | Stack |
@@ -191,7 +193,7 @@ Notes:
 | Frontend production build | `cd frontend && npm run build` | — | Passed |
 | End-to-end journeys | `cd frontend && npm run e2e` | The full stack running as in §3, with Mailpit and demo data | 6 journeys passed |
 
-The backend tests stub Gemini and Razorpay with a local HTTP server, so no API keys or network access are needed.
+The backend tests stub Gemini and Razorpay with a local HTTP server, so no API keys or network access are needed. The same checks run on GitHub Actions for every push and pull request (`.github/workflows/ci.yml`): backend tests against a MySQL 8 service, plus the frontend typecheck, unit tests and production build.
 
 The end-to-end suite uses the installed Microsoft Edge by default. Set `E2E_CHANNEL=chrome` (or `chromium` after `npx playwright install chromium`) to change it. It covers:
 - registration with an OTP read from Mailpit, then a request to the chosen library, with checks that only that library sees it, followed by approve, issue and return;
