@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title th:text="${title}">SmartLib</title>
+</head>
+<body style="margin:0;padding:0;background:#eef2f8;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1b2536;">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;" th:text="${preheader}">SmartLib</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f8;padding:24px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(9,20,38,0.12);">
+                <tr>
+                    <td style="background:#050b16;background-image:linear-gradient(135deg,#050b16 0%,#0d1c31 60%,#11243b 100%);padding:22px 28px;" align="left">
+                        <table role="presentation" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="background:#ffffff;border-radius:10px;padding:6px 12px;">
+                                    <img th:src="${logoUrl}" src="" alt="SmartLib — Intelligence in Every Chapter" height="40" style="display:block;height:40px;width:auto;border:0;">
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:32px 32px 8px 32px;">
+                        <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.3;color:#0d1c31;" th:text="${title}">Title</h1>
+                        <p th:if="${greeting}" style="margin:0 0 14px 0;font-size:15px;line-height:1.6;" th:text="${greeting}">Hi,</p>
+                        <p th:each="p : ${paragraphs}" style="margin:0 0 14px 0;font-size:15px;line-height:1.6;color:#33415a;" th:text="${p}">Paragraph</p>
+                    </td>
+                </tr>
+                <tr th:if="${otp}">
+                    <td align="center" style="padding:4px 32px 18px 32px;">
+                        <div style="display:inline-block;background:#f0f6ff;border:1px solid #bcd7ff;border-radius:12px;padding:14px 26px;">
+                            <span style="font-family:'Consolas','Courier New',monospace;font-size:34px;letter-spacing:10px;font-weight:700;color:#0b5ed7;" th:text="${otp}">000000</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${ctaUrl}">
+                    <td align="center" style="padding:6px 32px 22px 32px;">
+                        <a th:href="${ctaUrl}" href="#" style="display:inline-block;background:#1688ff;background-image:linear-gradient(135deg,#1688ff,#39c5ff);color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 28px;border-radius:10px;" th:text="${ctaLabel}">Continue</a>
+                        <p style="margin:12px 0 0 0;font-size:12px;color:#6b7a90;line-height:1.5;">
+                            If the button doesn't work, copy this link into your browser:<br>
+                            <span style="word-break:break-all;color:#0b5ed7;" th:text="${ctaUrl}">link</span>
+                        </p>
+                    </td>
+                </tr>
+                <tr th:if="${!#lists.isEmpty(facts)}">
+                    <td style="padding:0 32px 18px 32px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f9fc;border:1px solid #e3e9f2;border-radius:10px;">
+                            <tr th:each="f : ${facts}">
+                                <td style="padding:10px 14px;font-size:13px;color:#6b7a90;border-bottom:1px solid #e9eef5;" th:text="${f.label}">Label</td>
+                                <td style="padding:10px 14px;font-size:13px;color:#1b2536;font-weight:600;border-bottom:1px solid #e9eef5;" align="right" th:text="${f.value}">Value</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr th:if="${securityNote}">
+                    <td style="padding:0 32px 18px 32px;">
+                        <div style="background:#fff8e6;border-left:4px solid #e0a100;border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.5;color:#5c4400;" th:text="${securityNote}">Security note</div>
+                    </td>
+                </tr>
+                <tr th:if="${footnote}">
+                    <td style="padding:0 32px 18px 32px;font-size:12px;color:#6b7a90;line-height:1.5;" th:text="${footnote}">Footnote</td>
+                </tr>
+                <tr>
+                    <td style="padding:18px 32px 26px 32px;border-top:1px solid #e9eef5;font-size:12px;color:#8a96a8;line-height:1.6;">
+                        SmartLib — Intelligence in Every Chapter<br>
+                        Multi-Library Management &amp; Digital Learning Platform<br>
+                        <a th:href="${siteUrl}" href="#" style="color:#0b5ed7;text-decoration:none;">Open SmartLib</a>
+                        · This is an automated message; please do not reply.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

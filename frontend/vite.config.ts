@@ -1,31 +1,26 @@
-import { defineConfig } from 'vitest/config';
+/// <reference types="vitest/config" />
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { fileURLToPath, URL } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
 
-// The dev server proxies /api to the backend so the browser sees one origin.
-// That keeps CORS out of local development entirely; a deployed build talks to
-// VITE_API_BASE_URL instead, and that origin must be listed in the backend's
-// CORS_ALLOWED_ORIGINS.
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
-  },
+  plugins: [react(), tailwindcss()],
+  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: process.env.VITE_DEV_API_TARGET ?? 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
+    strictPort: true,
+    proxy: { '/api': { target: 'http://localhost:8080', changeOrigin: false } },
   },
+  preview: { port: 4173, proxy: { '/api': { target: 'http://localhost:8080' } } },
+  build: { outDir: 'dist', sourcemap: false, chunkSizeWarningLimit: 900 },
   test: {
-    // Node by default: most tests are pure logic and a DOM would only slow
-    // them down. The ones that render a component ask for jsdom themselves
-    // with a /** @vitest-environment jsdom */ comment at the top of the file.
-    environment: 'node',
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    setupFiles: ['./src/test-setup.ts'],
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+    css: false,
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
+    // The multi-step user-event journeys take ~2 s normally but can exceed the 5 s default on a busy laptop.
+    testTimeout: 15_000,
   },
 });

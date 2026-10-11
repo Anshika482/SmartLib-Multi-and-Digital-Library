@@ -1,0 +1,65 @@
+# DEMO SEED DATA — real published books (real ISBNs) used to populate the demo libraries.
+# isbn13|title|subtitle|authors (;-separated)|publisher|year|pages|category slug|language|description
+9780132350884|Clean Code|A Handbook of Agile Software Craftsmanship|Robert C. Martin|Prentice Hall|2008|464|technology|English|Practical guidance on writing readable, maintainable code, with case studies that show how to turn messy code into clean code.
+9780134685991|Effective Java|Third Edition|Joshua Bloch|Addison-Wesley|2018|412|technology|English|Ninety best practices for writing robust, efficient Java, covering generics, lambdas, streams, concurrency and API design.
+9781491910771|Head First Java|A Brain-Friendly Guide, 3rd Edition|Kathy Sierra;Bert Bates;Trisha Gee|O'Reilly Media|2022|752|technology|English|A highly visual, beginner-friendly introduction to Java and object-oriented programming.
+9781260463415|Java: The Complete Reference|Twelfth Edition|Herbert Schildt|McGraw Hill|2021|1280|technology|English|A comprehensive reference to the Java language, its core libraries and modern features.
+9780137673629|Core Java, Volume I: Fundamentals|Twelfth Edition|Cay S. Horstmann|Pearson|2021|944|technology|English|A thorough tour of Java fundamentals for experienced programmers, from syntax to collections and concurrency.
+9780321349606|Java Concurrency in Practice||Brian Goetz;Tim Peierls;Joshua Bloch;Joseph Bowbeer;David Holmes;Doug Lea|Addison-Wesley|2006|403|technology|English|The classic guide to writing correct, scalable concurrent programs on the Java platform.
+9781617293566|Modern Java in Action|Lambdas, Streams, Functional and Reactive Programming|Raoul-Gabriel Urma;Mario Fusco;Alan Mycroft|Manning|2018|592|technology|English|Explains modern Java features such as lambdas, streams, modules and reactive programming through hands-on examples.
+9781617297571|Spring in Action|Sixth Edition|Craig Walls|Manning|2022|520|technology|English|A practical guide to building web applications and services with Spring and Spring Boot.
+9780131872486|Thinking in Java|Fourth Edition|Bruce Eckel|Prentice Hall|2006|1150|technology|English|An in-depth exploration of Java and object-oriented design aimed at deep understanding rather than memorisation.
+9780135957059|The Pragmatic Programmer|Your Journey to Mastery, 20th Anniversary Edition|David Thomas;Andrew Hunt|Addison-Wesley|2019|352|technology|English|Timeless advice on the habits, tools and mindset of effective software developers.
+9780201633610|Design Patterns|Elements of Reusable Object-Oriented Software|Erich Gamma;Richard Helm;Ralph Johnson;John Vlissides|Addison-Wesley|1994|395|technology|English|The influential catalogue of 23 object-oriented design patterns from the "Gang of Four".
+9781492078005|Head First Design Patterns|Second Edition|Eric Freeman;Elisabeth Robson|O'Reilly Media|2020|672|technology|English|A visual, approachable introduction to design patterns using Java examples.
+9780134757599|Refactoring|Improving the Design of Existing Code, Second Edition|Martin Fowler|Addison-Wesley|2018|448|technology|English|A catalogue of refactorings and the reasoning behind improving code structure safely in small steps.
+9780134494166|Clean Architecture|A Craftsman's Guide to Software Structure and Design|Robert C. Martin|Prentice Hall|2017|432|technology|English|Principles for structuring software systems so they stay flexible, testable and independent of frameworks.
+9780262033848|Introduction to Algorithms|Third Edition|Thomas H. Cormen;Charles E. Leiserson;Ronald L. Rivest;Clifford Stein|MIT Press|2009|1312|technology|English|The standard university text on algorithms and data structures, with rigorous analysis.
+9781617292231|Grokking Algorithms|An Illustrated Guide for Programmers and Other Curious People|Aditya Bhargava|Manning|2016|256|technology|English|An illustrated, friendly introduction to common algorithms such as search, sorting and graphs.
+9780984782857|Cracking the Coding Interview|189 Programming Questions and Solutions|Gayle Laakmann McDowell|CareerCup|2015|687|technology|English|Interview preparation with programming questions, solutions and advice on technical hiring.
+9780735619678|Code Complete|A Practical Handbook of Software Construction, Second Edition|Steve McConnell|Microsoft Press|2004|960|technology|English|A comprehensive guide to software construction practices, from design to debugging.
+9781593279509|Eloquent JavaScript|A Modern Introduction to Programming, 3rd Edition|Marijn Haverbeke|No Starch Press|2018|472|technology|English|An introduction to programming through JavaScript, covering the language, the browser and Node.js.
+9781718502703|Python Crash Course|A Hands-On, Project-Based Introduction to Programming, 3rd Edition|Eric Matthes|No Starch Press|2023|552|technology|English|A fast-paced introduction to Python with projects including a game, data visualisations and a web app.
+9781593279929|Automate the Boring Stuff with Python|Practical Programming for Total Beginners, 2nd Edition|Al Sweigart|No Starch Press|2019|592|technology|English|Shows beginners how to write Python programs that automate everyday computer tasks.
+9780078022159|Database System Concepts|Seventh Edition|Abraham Silberschatz;Henry F. Korth;S. Sudarshan|McGraw Hill|2019|1376|technology|English|A widely used textbook on database design, SQL, transactions and storage.
+9780441172719|Dune||Frank Herbert|Ace|1965|896|fiction|English|An epic science-fiction saga of politics, religion and ecology on the desert planet Arrakis.
+9780593135204|Project Hail Mary||Andy Weir|Ballantine Books|2021|496|fiction|English|A lone astronaut wakes up with no memory and must save Earth using science and an unlikely friendship.
+9780525559474|The Midnight Library||Matt Haig|Viking|2020|304|fiction|English|Between life and death, a woman explores a library of books containing the lives she might have lived.
+9780062315007|The Alchemist||Paulo Coelho|HarperOne|1988|208|fiction|English|A shepherd boy travels in search of treasure and discovers the importance of following one's dreams.
+9780451524935|1984||George Orwell|Signet Classics|1949|328|fiction|English|A dystopian novel about surveillance, propaganda and totalitarian control.
+9780061120084|To Kill a Mockingbird||Harper Lee|Harper Perennial|1960|336|fiction|English|A story of racial injustice and moral growth in a small Alabama town, told through a child's eyes.
+9780743273565|The Great Gatsby||F. Scott Fitzgerald|Scribner|1925|180|fiction|English|A portrait of wealth, longing and illusion in the Jazz Age.
+9780141439518|Pride and Prejudice||Jane Austen|Penguin Classics|1813|480|fiction|English|A witty novel of manners following Elizabeth Bennet and Mr Darcy.
+9780547928227|The Hobbit||J. R. R. Tolkien|Houghton Mifflin Harcourt|1937|300|fiction|English|Bilbo Baggins is swept into a quest with dwarves to reclaim a treasure guarded by a dragon.
+9780553418026|The Martian||Andy Weir|Crown|2014|384|fiction|English|An astronaut stranded on Mars uses ingenuity and humour to survive.
+9780812979657|The God of Small Things||Arundhati Roy|Random House|1997|333|fiction|English|A Booker Prize-winning novel about twins and family secrets in Kerala.
+9781416562603|The White Tiger||Aravind Adiga|Free Press|2008|276|fiction|English|A darkly comic story of a driver's rise in modern India, winner of the Booker Prize.
+9781451673319|Fahrenheit 451||Ray Bradbury|Simon & Schuster|1953|249|fiction|English|In a future where books are burned, a fireman begins to question his role.
+9780735211292|Atomic Habits|An Easy & Proven Way to Build Good Habits & Break Bad Ones|James Clear|Avery|2018|320|non-fiction|English|A practical framework for improving a little every day through small changes in habits.
+9781455586691|Deep Work|Rules for Focused Success in a Distracted World|Cal Newport|Grand Central Publishing|2016|296|non-fiction|English|Argues for the value of distraction-free concentration and shows how to train it.
+9780374533557|Thinking, Fast and Slow||Daniel Kahneman|Farrar, Straus and Giroux|2011|499|non-fiction|English|A tour of the two systems that drive how we think, and the biases that shape our judgements.
+9780812981605|The Power of Habit|Why We Do What We Do in Life and Business|Charles Duhigg|Random House|2012|371|non-fiction|English|Explains the science of habit formation in individuals, organisations and societies.
+9780399590504|Educated|A Memoir|Tara Westover|Random House|2018|334|non-fiction|English|A memoir about growing up in an isolated family and the transformative power of education.
+9788173711466|Wings of Fire|An Autobiography|A. P. J. Abdul Kalam;Arun Tiwari|Universities Press|1999|196|non-fiction|English|The autobiography of the scientist and former President of India, from childhood to missile programmes.
+9780807014295|Man's Search for Meaning||Viktor E. Frankl|Beacon Press|1946|165|non-fiction|English|A psychiatrist's account of surviving the Holocaust and his insights on finding meaning in life.
+9780857197689|The Psychology of Money|Timeless Lessons on Wealth, Greed, and Happiness|Morgan Housel|Harriman House|2020|256|business|English|Short stories about how people think about money and how behaviour matters more than knowledge.
+9780804139298|Zero to One|Notes on Startups, or How to Build the Future|Peter Thiel;Blake Masters|Crown Business|2014|224|business|English|Ideas on innovation and building companies that create new things.
+9780307887894|The Lean Startup||Eric Ries|Crown Business|2011|336|business|English|A method for building startups through rapid experimentation and validated learning.
+9781612680194|Rich Dad Poor Dad||Robert T. Kiyosaki|Plata Publishing|1997|336|business|English|Personal-finance lessons contrasting two approaches to money, work and investing.
+9780066620992|Good to Great|Why Some Companies Make the Leap... and Others Don't|Jim Collins|HarperBusiness|2001|320|business|English|Research into what distinguishes companies that achieved sustained great results.
+9780553380163|A Brief History of Time||Stephen Hawking|Bantam|1988|212|science|English|An accessible explanation of cosmology, black holes and the nature of time.
+9780345539434|Cosmos||Carl Sagan|Ballantine Books|1980|396|science|English|A sweeping journey through the universe and the history of scientific discovery.
+9780198788607|The Selfish Gene|40th Anniversary Edition|Richard Dawkins|Oxford University Press|1976|544|science|English|A gene-centred view of evolution that reshaped popular understanding of biology.
+9781476733500|The Gene|An Intimate History|Siddhartha Mukherjee|Scribner|2016|592|science|English|The history of genetics, from Mendel to gene editing, woven with the author's family story.
+9780393609394|Astrophysics for People in a Hurry||Neil deGrasse Tyson|W. W. Norton & Company|2017|222|science|English|Short, lively chapters on the essential ideas of astrophysics.
+9781501144318|Why We Sleep|Unlocking the Power of Sleep and Dreams|Matthew Walker|Scribner|2017|368|health-wellness|English|A neuroscientist explains why sleep matters for health, learning and wellbeing.
+9780143127741|The Body Keeps the Score|Brain, Mind, and Body in the Healing of Trauma|Bessel van der Kolk|Penguin Books|2014|464|health-wellness|English|How trauma affects the brain and body, and approaches that support recovery.
+9780143130727|Ikigai|The Japanese Secret to a Long and Happy Life|Héctor García;Francesc Miralles|Penguin Books|2017|208|health-wellness|English|Explores purpose, community and daily habits associated with long, fulfilling lives.
+9780062316097|Sapiens|A Brief History of Humankind|Yuval Noah Harari|Harper|2015|464|history|English|A history of humankind from early humans to the present, focusing on the stories that shape societies.
+9780393317558|Guns, Germs, and Steel|The Fates of Human Societies|Jared Diamond|W. W. Norton & Company|1997|480|history|English|Examines how geography and environment shaped the development of civilisations.
+9781101912379|The Silk Roads|A New History of the World|Peter Frankopan|Knopf|2016|656|history|English|World history retold from the perspective of the trade routes linking East and West.
+9780060958589|India After Gandhi|The History of the World's Largest Democracy|Ramachandra Guha|Harper Perennial|2007|900|history|English|A narrative history of independent India from 1947 onwards.
+9780062464316|Homo Deus|A Brief History of Tomorrow|Yuval Noah Harari|Harper|2017|464|history|English|Speculates about humanity's future as technology reshapes what it means to be human.
+9780714832470|The Story of Art|Sixteenth Edition|E. H. Gombrich|Phaidon|1950|688|arts-culture|English|One of the most popular introductions to art history, from cave paintings to modern art.
+9780140135152|Ways of Seeing||John Berger|Penguin Books|1972|176|arts-culture|English|An influential essay collection on how we look at art and images.
+9780761169253|Steal Like an Artist|10 Things Nobody Told You About Being Creative|Austin Kleon|Workman Publishing|2012|160|arts-culture|English|A short, illustrated manifesto on creativity in the digital age.

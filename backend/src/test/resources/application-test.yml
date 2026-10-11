@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: ${SMARTLIB_TEST_DB_URL:jdbc:mysql://localhost:3306/smartlib_test?serverTimezone=UTC&characterEncoding=utf8}
+  flyway:
+    clean-disabled: false
+smartlib:
+  jwt:
+    secret: dGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQ=
+  security:
+    token-pepper: test-pepper
+    bcrypt-strength: 4
+  mail:
+    async: false
+  storage:
+    dir: ./target/test-storage
+  gemini:
+    api-key: test-key
+    base-url: http://127.0.0.1:1
+    first-chunk-timeout: 3s
+    total-timeout: 6s
+  razorpay:
+    key-id: rzp_test_key
+    key-secret: test_secret
+    webhook-secret: test_webhook_secret
+    base-url: http://127.0.0.1:1
+  covers:
+    enabled: false
+  seed:
+    demo: false
+    demo-login: false
+  bootstrap:
+    super-admin-email: ""

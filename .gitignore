@@ -1,26 +1,13 @@
-# Environment / secrets
 .env
-.env.*
-!.env.example
-**/.env
-**/.env.*
-!**/.env.example
-
-# Java / Maven
-**/target/
-**/.classpath
-**/.project
-**/.settings/
-
-# Node / frontend
-**/node_modules/
-**/dist/
-**/.vite/
-
-# IDE
-.vscode/
+*.log
+storage/
+backend/target/
+backend/storage/
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+frontend/.vite/
 .idea/
-
-# OS
+*.iml
 .DS_Store
-Thumbs.db

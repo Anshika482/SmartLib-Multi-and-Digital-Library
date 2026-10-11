@@ -1,0 +1,129 @@
+spring:
+  application:
+    name: smartlib
+  config:
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:./.env[.properties]
+  datasource:
+    url: ${SMARTLIB_DB_URL:jdbc:mysql://localhost:3306/smartlib?serverTimezone=UTC&characterEncoding=utf8}
+    username: ${SMARTLIB_DB_USERNAME:smartlib}
+    password: ${SMARTLIB_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  threads:
+    virtual:
+      enabled: true
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          connectiontimeout: 5000
+          timeout: 10000
+          writetimeout: 10000
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+            # Never fall back to plain text when STARTTLS is on, so SMTP credentials are always encrypted.
+            required: ${MAIL_STARTTLS:false}
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 210MB
+  thymeleaf:
+    check-template-location: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-stacktrace: never
+    include-message: never
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+
+smartlib:
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET:}
+    access-ttl: 15m
+    refresh-ttl: 7d
+  security:
+    token-pepper: ${APP_TOKEN_PEPPER:}
+    cookie-secure: ${COOKIE_SECURE:false}
+    bcrypt-strength: 12
+  verification:
+    otp-ttl: 10m
+    link-ttl: 24h
+    max-attempts: 5
+    resend-cooldown: 60s
+    max-resends-per-day: 5
+    unverified-retention: 7d
+  password-reset:
+    ttl: 30m
+  mail:
+    from: ${MAIL_FROM:no-reply@smartlib.local}
+    from-name: SmartLib
+    async: true
+  storage:
+    dir: ${STORAGE_DIR:./storage}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    # Fastest measured: first words in ~1 s with minimal thinking (gemini-flash-latest took ~10 s).
+    model: ${GEMINI_MODEL:gemini-flash-lite-latest}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+    thinking-budget: 0
+    thinking-level: ${GEMINI_THINKING_LEVEL:minimal}
+    temperature: 0.5
+    max-output-tokens: 1024
+    connect-timeout: 3s
+    first-chunk-timeout: 15s
+    total-timeout: 40s
+    history-messages: 24
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    base-url: ${RAZORPAY_BASE_URL:https://api.razorpay.com}
+    # Without keys, show the payment flow with the built-in demo gateway (labelled demo, no real money). Off in production.
+    demo-mode: ${PAYMENTS_DEMO_MODE:false}
+  covers:
+    enabled: ${COVERS_ENABLED:true}
+    open-library-url: https://openlibrary.org
+    open-library-covers-url: https://covers.openlibrary.org
+    google-books-url: https://www.googleapis.com
+  seed:
+    demo: ${SEED_DEMO_DATA:false}
+    demo-password: ${DEMO_USER_PASSWORD:}
+    # Shows one-click demo accounts on the login page so visitors can explore. Turn off for production.
+    demo-login: ${DEMO_LOGIN_ENABLED:false}
+  bootstrap:
+    super-admin-email: ${BOOTSTRAP_SUPER_ADMIN_EMAIL:}
+    super-admin-password: ${BOOTSTRAP_SUPER_ADMIN_PASSWORD:}
+    super-admin-name: ${BOOTSTRAP_SUPER_ADMIN_NAME:Platform Administrator}

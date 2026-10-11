@@ -1,19 +1,33 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import './styles/tokens.css';
-import './styles/global.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider } from 'react-router';
+import { Toaster } from 'sonner';
+import { router } from './app/router';
+import { ApiError } from './api/http';
+import '@fontsource-variable/plus-jakarta-sans/wght.css';
+import '@fontsource/caveat/600.css';
+import './styles/index.css';
 
-// The design system is imported once, here, before anything renders: tokens
-// first, then the rules that use them.
-const root = document.getElementById('root');
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: (count, error) => {
+        if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
+        return count < 2;
+      },
+    },
+  },
+});
 
-if (root === null) {
-  throw new Error('index.html is missing the #root element the application mounts into.');
-}
-
-createRoot(root).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <Toaster theme="dark" position="top-right" richColors closeButton
+        toastOptions={{ style: { background: '#0d1c31', border: '1px solid rgba(110,170,255,.25)', color: '#f4f8ff' } }} />
+    </QueryClientProvider>
   </StrictMode>,
 );
