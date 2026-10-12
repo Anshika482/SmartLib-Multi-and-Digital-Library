@@ -1,4 +1,4 @@
-```ts
+
 import { useSession } from '@/stores/session';
 import type { LoginResponse } from './types';
 
@@ -247,4 +247,4 @@ export async function download(path: string, filename: string) {
   a.remove();
   URL.revokeObjectURL(url);
 }
-```
+
