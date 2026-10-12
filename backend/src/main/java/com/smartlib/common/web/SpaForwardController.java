@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @ConditionalOnResource(resources = "classpath:/static/index.html")
 public class SpaForwardController {
 
-    @GetMapping({"/", "/{path:^(?!api$|actuator$|assets$)[^\\.]*}", "/{path:^(?!api$|actuator$|assets$)[^\\.]*}/**"})
+    @GetMapping({"/", "/{path:^(?!api$|actuator$|assets$|brand$)[^\\.]*}", "/{path:^(?!api$|actuator$|assets$|brand$)[^\\.]*}/**"})
     public String forward() {
         return "forward:/index.html";
     }
