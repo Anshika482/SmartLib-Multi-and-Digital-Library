@@ -1,8 +1,68 @@
-# SmartLib
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="frontend/public/brand/smartlib-logo-dark.png">
+    <img src="frontend/public/brand/smartlib-logo.png" alt="SmartLib, Intelligence in Every Chapter" width="420">
+  </picture>
+</p>
 
-[![CI](https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml/badge.svg)](https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml)
+<h3 align="center">Multi-Library Management & Digital Learning Platform</h3>
 
-**Multi-library management and digital learning platform.** It has a public cross-library catalogue, role-based dashboards (Member, Librarian, Admin, Super Admin), circulation with fines and Razorpay payments, digital resources, and a Google Gemini assistant grounded in the live catalogue.
+<p align="center">
+  Discover books across many libraries, borrow from the one you choose, and ask an AI librarian anything.
+</p>
+
+<p align="center">
+  <a href="https://smartlib-xi89.onrender.com"><strong>🔗 Live Demo</strong></a>
+  ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a>
+  ·
+  <a href="#3-running-locally">Run locally</a>
+  ·
+  <a href="#6-deployment">Deployment</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml"><img src="https://github.com/Anshika482/SmartLib-Multi-and-Digital-Library/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 4.1">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19">
+  <img src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white" alt="MySQL 8">
+  <img src="https://img.shields.io/badge/Gemini-AI-8E75B2?logo=googlegemini&logoColor=white" alt="Google Gemini">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License">
+</p>
+
+---
+
+## 🚀 Live demo
+
+**<https://smartlib-xi89.onrender.com>**
+
+- **Try it without signing up.** On the login page, open **"Use a demo account"** and pick **Member**, **Librarian** or **Admin**. The form fills itself in.
+- **First load can be slow.** The demo runs on Render's free plan, which puts the server to sleep after 15 minutes without visitors. The first visit after that can take a minute or more while it wakes up; after that it is fast.
+- **It is demo data.** Libraries, books, loans and fines are seeded for demonstration and may be reset at any time. Payments use a built-in demo gateway, so no real money moves.
+
+**A good path to try:** search for *Clean Code*, compare its availability across libraries on the book page, request it from **Riverside**, then sign in as the Librarian to approve and issue it. Other libraries' staff never see the request.
+
+## ✨ What SmartLib does
+
+SmartLib is not a single-library CRUD app. It is one platform hosting many independent libraries, built around a simple rule: **exploring is open to everyone, borrowing is always tied to one chosen library.**
+
+| | Feature | Highlights |
+|---|---|---|
+| 📚 | **Cross-library catalogue** | Search by title, author or ISBN across every library at once, or filter to one. Server-side search and pagination, with state kept in the URL. |
+| 🏛️ | **Per-library availability** | One book, many libraries, separate copy counts. Pick a library on the book page and request from it. |
+| 🖼️ | **ISBN covers** | Local upload, then Open Library, then Google Books, then a generated placeholder. Never a broken image. |
+| 🔐 | **Secure accounts** | Email verification by 6-digit OTP *or* link, JWT access tokens, rotating refresh cookies, rate limits and password reset. |
+| 👥 | **Four roles** | Member, Librarian, Admin and a single Super Admin, each with its own dashboard. Librarian and Admin accounts need approval. |
+| 🧱 | **Strict library isolation** | A librarian of one library can never read another library's requests, loans, fines or members. Enforced on the server and checked by an ArchUnit rule. |
+| 🔄 | **Full circulation** | Request → approve/reject → issue → return, with due dates, reminders, overdue tracking and automatic fines. |
+| 💳 | **Fine payments** | Razorpay (test mode) or a built-in demo gateway, both verified on the server before a fine is marked paid. |
+| 📂 | **Digital resources** | PDF, EPUB, video and links, with access control. |
+| 🤖 | **AI librarian (Google Gemini)** | Streams answers, talks about anything, and uses function calling to look up the *real* catalogue, your loans and your fines. It never invents a book. |
+| 🔔 | **Notifications** | In-app notifications plus HTML emails for approvals, due dates, fines and payments. |
+| 📊 | **Reports and audit** | Library and platform analytics from live data, and an audit log that never stores secrets. |
+
+## 🧰 Tech stack
 
 | Part | Stack |
 |---|---|
@@ -10,6 +70,7 @@
 | Frontend | React 19, TypeScript, Vite 6, React Router 7, TanStack Query 5, Zustand, React Hook Form + Zod, Tailwind CSS 4 |
 | Integrations | Google Gemini (REST streaming + function calling), Razorpay (Orders API + signature/webhook verification), Open Library / Google Books (covers), SMTP |
 | Tests | JUnit 5, Spring Boot Test, MockMvc, ArchUnit; Vitest, Testing Library, MSW; Playwright |
+| Hosting (demo) | Docker on Render, MySQL on Aiven, email through Brevo SMTP |
 
 The design and the reasoning behind it are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -157,6 +218,8 @@ Everything works without these keys. Each feature says clearly that it isn't con
 
 ### Sending real email with Gmail
 
+This works on your own machine. On Render's free plan, use Brevo instead (see [Deployment](#6-deployment)).
+
 1. **Turn on 2-Step Verification** on the Gmail account that will send the emails.
 2. **Create an App Password** at Google Account → Security → **App passwords** (name it "SmartLib"). Google shows a 16-character password once; copy it.
 3. **Update `.env`.** In `.env` in the project root, replace the seven `MAIL_*` lines with:
@@ -202,7 +265,60 @@ The end-to-end suite uses the installed Microsoft Edge by default. Set `E2E_CHAN
 - the payment safeguards;
 - the assistant's states.
 
-## 6. Production build (single server)
+## 6. Deployment
+
+The live demo runs as **one Docker container** that serves both the API and the React app.
+
+### How the image is built
+
+The root [`Dockerfile`](Dockerfile) has three stages:
+
+1. **Frontend:** `npm install` and `npm run build` with Node 22.
+2. **Backend:** copies the built `dist/` into `backend/src/main/resources/static/` and runs `mvn clean package`.
+3. **Runtime:** a slim Java 21 JRE image runs the jar on `$PORT` (default `10000`).
+
+Spring Boot serves the files under `/assets` and `/brand` directly, and forwards every other non-API path to `index.html`, so deep links and refreshes work.
+
+### Hosting the demo for free
+
+| Piece | Service | Notes |
+|---|---|---|
+| App | [Render](https://render.com) Web Service, runtime **Docker** | Uses the root `Dockerfile`. Auto-deploys on every push to `main`. |
+| Database | [Aiven](https://aiven.io) for MySQL (free plan) | Put its host, port and database in `SMARTLIB_DB_URL`. Flyway creates the schema on first start. |
+| Email | [Brevo](https://www.brevo.com) SMTP relay (free plan) | Render's free plan **blocks outbound SMTP ports 25, 465 and 587**, so Gmail on port 587 times out there. Brevo also listens on port **2525**, which works. |
+
+### Environment variables on the host
+
+Set these in the host's environment settings, never in a committed file:
+
+| Variable | Value for the demo |
+|---|---|
+| `SMARTLIB_DB_URL`, `SMARTLIB_DB_USERNAME`, `SMARTLIB_DB_PASSWORD` | The Aiven connection details |
+| `JWT_SECRET`, `APP_TOKEN_PEPPER` | New random values (do not reuse your local ones) |
+| `FRONTEND_BASE_URL`, `CORS_ALLOWED_ORIGINS` | The public URL, e.g. `https://smartlib-xi89.onrender.com` |
+| `COOKIE_SECURE` | `true` |
+| `MAIL_HOST` / `MAIL_PORT` | `smtp-relay.brevo.com` / `2525` |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Brevo's SMTP login and an SMTP key (not an API key) |
+| `MAIL_SMTP_AUTH` / `MAIL_STARTTLS` | `true` / `true` |
+| `MAIL_FROM` | A sender address verified in Brevo |
+| `GEMINI_API_KEY` | Your Google AI Studio key. Leave `GEMINI_MODEL` unset to use the fast default. |
+| `SEED_DEMO_DATA`, `DEMO_USER_PASSWORD`, `DEMO_LOGIN_ENABLED` | `true`, a strong password, and `true` only while the public demo panel should be shown |
+| `PAYMENTS_DEMO_MODE` | `true` for the demo gateway, or set the Razorpay test keys |
+| `BOOTSTRAP_SUPER_ADMIN_EMAIL`, `BOOTSTRAP_SUPER_ADMIN_PASSWORD` | The single Super Admin account |
+
+**Demo data on a hosted database:** the seeder only runs when the database has no libraries. To re-seed, empty the database (drop its tables) and redeploy. This deletes everything stored there.
+
+**Cold starts:** a free Render instance sleeps after 15 minutes idle. A free uptime pinger hitting `/actuator/health` every 10 minutes keeps it awake.
+
+### A real production deployment
+
+- Set `DEMO_LOGIN_ENABLED=false`, `SEED_DEMO_DATA=false` and `PAYMENTS_DEMO_MODE=false`.
+- Serve the app over HTTPS with `COOKIE_SECURE=true`.
+- Set `FRONTEND_BASE_URL` and `CORS_ALLOWED_ORIGINS` to the public URL.
+- Use a real SMTP provider with an authenticated sending domain.
+- Keep secrets in the host's secret store rather than in a file.
+
+### Building the jar by hand
 
 ```bash
 cd frontend && npm run build
@@ -211,14 +327,6 @@ cp -r dist/* ../backend/src/main/resources/static/
 cd ../backend && ./mvnw clean package
 java -jar target/smartlib-backend-1.0.0.jar
 ```
-
-For a real deployment:
-- Set `DEMO_LOGIN_ENABLED=false`, `SEED_DEMO_DATA=false` and `PAYMENTS_DEMO_MODE=false`.
-- Serve the app over HTTPS.
-- Set `COOKIE_SECURE=true`.
-- Set `FRONTEND_BASE_URL` and `CORS_ALLOWED_ORIGINS` to the public URL.
-- Use a real SMTP provider.
-- Keep secrets in the host's secret store rather than in a file.
 
 ## 7. Project layout
 
@@ -237,6 +345,8 @@ SmartLib/
 │   ├── src/app, layouts, components, features/<area>, api, stores, styles
 │   └── e2e/                 Playwright journeys
 ├── docs/ARCHITECTURE.md
+├── Dockerfile               one-container build used for the live demo
+├── start-smartlib.bat       one-click local start on Windows
 └── .env.example
 ```
 
@@ -257,3 +367,9 @@ Third-party material keeps its own terms and is **not** covered by that license:
 - **Assistant avatar** (`frontend/public/brand/assistant-avatar.webp`): adapted from artwork owned by a third party. Replace it, or obtain permission, before any public or commercial use.
 - **Book covers and metadata**: loaded at runtime from Open Library and Google Books, under their terms.
 - **Fonts and libraries**: Plus Jakarta Sans and Caveat (SIL Open Font License), plus the npm and Maven dependencies, under their own licenses.
+
+## 👩‍💻 Author
+
+**Anshika Verma** · [GitHub @Anshika482](https://github.com/Anshika482)
+
+If you find the project useful, a ⭐ on the repository is appreciated.
